@@ -53,8 +53,26 @@ class CAMT_Parser:
                 transactions.append(txn)
         
         transactions = [transaction for transaction in transactions if transaction['Status'] == 'BOOK']
+        transactions = self.normalize_counterparty(transactions)
         
         return transactions
+    
+    def normalize_counterparty(transactions):
+        result = []
+        for t in transactions:
+            new_t = t.copy()
+            if new_t['CdtDbtInd'] == 'CRDT':
+                new_t['Counterparty_Name'] = new_t.pop('Debtor_Name')
+                new_t['Counterparty_IBAN'] = new_t.pop('Debtor_IBAN')
+                del new_t['Creditor_Name']
+                del new_t['Creditor_IBAN']
+            else:  # DBIT
+                new_t['Counterparty_Name'] = new_t.pop('Creditor_Name')
+                new_t['Counterparty_IBAN'] = new_t.pop('Creditor_IBAN')
+                del new_t['Debtor_Name']
+                del new_t['Debtor_IBAN']
+            result.append(new_t)
+        return result
 
 
 if __name__ == '__main__':
