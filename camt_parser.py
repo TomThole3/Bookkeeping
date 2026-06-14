@@ -57,7 +57,7 @@ class CAMT_Parser:
         
         return transactions
     
-    def normalize_counterparty(transactions):
+    def normalize_counterparty(self, transactions):
         result = []
         for t in transactions:
             new_t = t.copy()
