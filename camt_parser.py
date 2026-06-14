@@ -20,7 +20,6 @@ class CAMT_Parser:
             txn = {
                 'NtryRef': self._text(ntry, 'ns:NtryRef'),
                 'Amount': self._text(ntry, 'ns:Amt'),
-                'Currency': ntry.find('ns:Amt', self.CAMT_NS).get('Ccy') if ntry.find('ns:Amt', self.CAMT_NS) is not None else None,
                 'CdtDbtInd': self._text(ntry, 'ns:CdtDbtInd'),
                 'Status': self._text(ntry, 'ns:Sts'),
                 'BookgDt': self._text(ntry, 'ns:BookgDt/ns:Dt'),
@@ -52,7 +51,9 @@ class CAMT_Parser:
                 txn['Creditor_Name'] = None
                 txn['Creditor_IBAN'] = None
                 transactions.append(txn)
-
+        
+        transactions = [transaction for transaction in transactions if transaction['Status'] == 'BOOK']
+        
         return transactions
 
 
