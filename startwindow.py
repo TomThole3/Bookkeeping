@@ -9,7 +9,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Muntenman Central")
+        self.setWindowTitle("Muntenman Centraal")
         self.setGeometry(100, 100, 300, 200)
 
         # ---------------------------
@@ -44,7 +44,7 @@ class MainWindow(QWidget):
         self.balance_window = BalanceWindow()
 
         # Add all screens to stack
-        self.stack.addWidget(main_menu)           # index 0
+        self.stack.addWidget(main_menu)               # index 0
         self.stack.addWidget(self.processing_window)  # index 1
         self.stack.addWidget(self.journal_window)     # index 2
         self.stack.addWidget(self.balance_window)     # index 3
