@@ -99,5 +99,13 @@ class DatabaseInteractions:
         )
         self.conn.commit()
     
-    
+    def get_categories(self):
+        cursor = self.conn.execute(
+            """
+            SELECT name
+            FROM categories
+            ORDER BY name ASC
+            """
+        )
+        return [row[0] for row in cursor.fetchall()]
         

@@ -22,6 +22,9 @@ class ProcessingWindowBackend:
                 
     def get_all_transactions(self):
         return self.db.get_uncategorized_transactions()
+    
+    def get_categories(self):
+        return self.db.get_categories()
         
 
 class FileSelectScreen(QWidget):
