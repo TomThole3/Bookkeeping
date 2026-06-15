@@ -21,7 +21,7 @@ class ProcessingWindow(QWidget):
         self.btn_add_entries = QPushButton("Add new entries")
         self.btn_add_entries.clicked.connect(self.add_entries)
         layout.addWidget(self.btn_add_entries)
-
+        
         self.setLayout(layout)
 
     def add_entries(self):

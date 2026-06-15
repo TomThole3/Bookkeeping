@@ -80,5 +80,23 @@ class DatabaseInteractions:
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     
+    def update_transactions(self, transactions):
+        self.conn.executemany(
+            """
+            UPDATE transactions
+            SET description = ?,
+                category = ?
+            WHERE reference = ?
+            """,
+            [(
+                    t.description,
+                    t.category,
+                    t.reference,
+                )
+                for t in transactions
+            ]
+        )
+        self.conn.commit()
+    
     
         
