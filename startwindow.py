@@ -39,7 +39,7 @@ class MainWindow(QWidget):
         # ---------------------------
         # OTHER SCREENS
         # ---------------------------
-        self.processing_window = ProcessingWindow()
+        self.processing_window = ProcessingWindow(self.stack)
         self.journal_window = JournalWindow()
         self.balance_window = BalanceWindow()
 

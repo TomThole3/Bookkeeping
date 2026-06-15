@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog
 from processingwindowbackend import ProcessingWindowBackend
 
 class ProcessingWindow(QWidget):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__()
         
+        self.stack = stack
         self.backend = ProcessingWindowBackend()
         
         self.setWindowTitle("Muntenman Schuifwerk")
@@ -25,7 +26,7 @@ class ProcessingWindow(QWidget):
 
     def add_entries(self):
         self.backend.add_entries()
-
+    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
