@@ -17,8 +17,8 @@ class ProcessingWindowBackend:
         path = self.fileselector.select_file()
         if path:
             transactions = self.parser.extract_camt_transactions(path)
-            
-            
+            for transaction in transactions:
+                self.db.save_transaction(transaction)
         
 
 class FileSelectScreen(QWidget):
