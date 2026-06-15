@@ -3,7 +3,7 @@
 import sqlite3
 from transaction import Transaction
 
-class Database_Interactions:
+class DatabaseInteractions:
     
     def __init__(self, db_path="transactions.db"):
        self.conn = sqlite3.connect(db_path)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from lxml import etree
 
-class CAMT_Parser:
+class CAMTParser:
 
     def __init__(self):
         self.CAMT_NS = {'ns': 'urn:iso:std:iso:20022:tech:xsd:camt.053.001.02'}  # adjust version if needed
