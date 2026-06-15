@@ -20,10 +20,6 @@ class BalanceWindow(QWidget):
 
         self.setLayout(layout)
 
-    def add_entries(self):
-        pass
-
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = BalanceWindow()
