@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from lxml import etree
+from transaction import Transaction
 
 class CAMTParser:
 
@@ -55,7 +56,7 @@ class CAMTParser:
         transactions = [transaction for transaction in transactions if transaction['Status'] == 'BOOK']
         transactions = self.normalize_counterparty(transactions)
         
-        return transactions
+        return [Transaction.from_dict(entry) for entry in transactions]
     
     def normalize_counterparty(self, transactions):
         result = []
@@ -77,7 +78,7 @@ class CAMTParser:
 
 if __name__ == '__main__':
     path = input('path ').strip('"')
-    xmlparse = CAMT_Parser()
+    xmlparse = CAMTParser()
     txns = xmlparse.extract_camt_transactions(path)
     for t in txns:
         print(t)

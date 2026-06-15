@@ -11,3 +11,15 @@ class Transaction:
         self.origin_name = origin_name
         self.origin_iban = origin_iban
         self.category = category
+        
+    @classmethod
+    def from_dict(cls, entry):
+        return cls(
+            reference=entry["NtryRef"],
+            amount=float(entry["Amount"]),
+            cdt_dbt=entry["CdtDbtInd"],
+            date=entry["BookgDt"],
+            description=entry["AddtlNtryInf"],
+            origin_name=entry.get("Counterparty_Name"),
+            origin_iban=entry.get("Counterparty_IBAN")
+            )

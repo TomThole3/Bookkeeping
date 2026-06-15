@@ -1,15 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog
+from camt_parser import CAMTParser
+from database import DatabaseInteractions
+from transaction import Transaction
 
 
 class ProcessingWindowBackend:
 
     def __init__(self, stack):
         self.fileselector = FileSelectScreen(stack)
+        self.parser = CAMTParser()
+        self.db = DatabaseInteractions()
         
     def add_entries(self):
         path = self.fileselector.select_file()
+        if path:
+            transactions = self.parser.extract_camt_transactions(path)
+            
+            
         
 
 class FileSelectScreen(QWidget):
@@ -35,8 +44,4 @@ class FileSelectScreen(QWidget):
             "",                        # starting directory ("" = default)
             "CAMT Files (*.xml);;All Files (*)"  # file type filter
         )
-    
-        if file_path:  # empty string if user cancels
-            self.file_path = file_path
-            self.label.setText(f"Selected: {file_path}")
         return file_path

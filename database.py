@@ -78,3 +78,4 @@ class DatabaseInteractions:
             (category,),
         )
         return [Transaction(*row) for row in cursor.fetchall()]
+        
