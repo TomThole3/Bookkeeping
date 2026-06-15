@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox
 from processingwindowbackend import ProcessingWindowBackend
 
 class ProcessingWindow(QWidget):
@@ -16,9 +17,10 @@ class ProcessingWindow(QWidget):
         layout = QVBoxLayout()
 
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
             "Reference",
+            "CrdtDbt",
             "Amount",
             "Date",
             "Origin",
@@ -27,6 +29,7 @@ class ProcessingWindow(QWidget):
         ])
         
         layout.addWidget(self.table)
+        self.load_transactions()
 
         self.btn_add_entries = QPushButton("Add new entries")
         self.btn_add_entries.clicked.connect(self.add_entries)
@@ -38,15 +41,57 @@ class ProcessingWindow(QWidget):
         self.backend.add_entries()
         
     def load_transactions(self):
+    
         transactions = self.backend.get_all_transactions()
         self.table.setRowCount(len(transactions))
+    
+        categories = ["Uncategorized", "Food", "Rent", "Transport", "Income", "Other"] # Haal deze uit de functie
+    
         for row, t in enumerate(transactions):
-            self.table.setItem(row, 0, QTableWidgetItem(t.reference))
-            self.table.setItem(row, 1, QTableWidgetItem(str(t.amount)))
-            self.table.setItem(row, 2, QTableWidgetItem(t.date))
-            self.table.setItem(row, 3, QTableWidgetItem(t.origin))
-            self.table.setItem(row, 4, QTableWidgetItem(t.description or ""))
-            self.table.setItem(row, 5, QTableWidgetItem(t.category or ""))
+    
+            # 0. Reference (READ ONLY)
+            item = QTableWidgetItem(t.reference)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 0, item)
+    
+            # 1. C/D (READ ONLY)
+            item = QTableWidgetItem(t.cdt_dbt)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 1, item)
+    
+            # 2. Amount (READ ONLY)
+            item = QTableWidgetItem(str(t.amount))
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 2, item)
+    
+            # 3. Date (READ ONLY)
+            item = QTableWidgetItem(t.date)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 3, item)
+    
+            # 4. Origin name (READ ONLY)
+            item = QTableWidgetItem(t.origin_name)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table.setItem(row, 4, item)
+    
+            # 5. Description (EDITABLE)
+            self.table.setItem(
+                row,
+                5,
+                QTableWidgetItem(t.description or "")
+            )
+    
+            # 6. CATEGORY (DROPDOWN)
+            combo = QComboBox()
+            combo.addItems(categories)
+    
+            # set current value if it exists
+            if t.category and t.category in categories:
+                combo.setCurrentText(t.category)
+            else:
+                combo.setCurrentText("Uncategorized")
+    
+            self.table.setCellWidget(row, 6, combo)
     
 
 if __name__ == "__main__":

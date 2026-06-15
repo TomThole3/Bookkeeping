@@ -14,10 +14,6 @@ class BalanceWindow(QWidget):
         self.label = QLabel("Choose an action:")
         layout.addWidget(self.label)
 
-        self.btn_add_transaction = QPushButton("Add new transactions")
-        self.btn_add_transaction.clicked.connect(self.add_entries)
-        layout.addWidget(self.btn_add_transaction)
-
         self.setLayout(layout)
 
 if __name__ == "__main__":
