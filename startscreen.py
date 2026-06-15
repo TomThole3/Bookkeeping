@@ -1,12 +1,13 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
-
+from startwindowbackend import StartWindowBackend
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Personal Bookkeeping")
         self.setGeometry(100, 100, 300, 200)
+        self.backend = StartWindowBackend()
 
         layout = QVBoxLayout()
 
@@ -28,7 +29,7 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
     def processing(self):
-        pass
+        self.backend.open_processing()
 
     def journal(self):
         pass
