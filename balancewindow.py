@@ -15,9 +15,3 @@ class BalanceWindow(QWidget):
         layout.addWidget(self.label)
 
         self.setLayout(layout)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = BalanceWindow()
-    window.show()
-    sys.exit(app.exec())

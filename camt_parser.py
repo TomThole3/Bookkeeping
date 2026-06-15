@@ -74,12 +74,3 @@ class CAMTParser:
                 del new_t['Debtor_IBAN']
             result.append(new_t)
         return result
-
-
-if __name__ == '__main__':
-    path = input('path ').strip('"')
-    xmlparse = CAMTParser()
-    txns = xmlparse.extract_camt_transactions(path)
-    for t in txns:
-        print(t)
-        print('')

@@ -92,10 +92,3 @@ class ProcessingWindow(QWidget):
                 combo.setCurrentText("Uncategorized")
     
             self.table.setCellWidget(row, 6, combo)
-    
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = ProcessingWindow()
-    window.show()
-    sys.exit(app.exec())
