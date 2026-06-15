@@ -1,41 +1,73 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
-from startwindowbackend import StartWindowBackend
+from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QStackedWidget)
+from processingwindow import ProcessingWindow
+from balancewindow import BalanceWindow
+from journalwindow import JournalWindow
+
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Personal Bookkeeping")
-        self.setGeometry(100, 100, 300, 200)
-        self.backend = StartWindowBackend()
 
-        layout = QVBoxLayout()
+        self.setWindowTitle("Muntenman Central")
+        self.setGeometry(100, 100, 300, 200)
+
+        # ---------------------------
+        # STACKED WIDGET (navigation)
+        # ---------------------------
+        self.stack = QStackedWidget()
+        main_menu = QWidget()
+        main_layout = QVBoxLayout()
 
         self.label = QLabel("Choose an action:")
-        layout.addWidget(self.label)
+        main_layout.addWidget(self.label)
 
         self.btn_add_transaction = QPushButton("Process transactions")
         self.btn_add_transaction.clicked.connect(self.processing)
-        layout.addWidget(self.btn_add_transaction)
+        main_layout.addWidget(self.btn_add_transaction)
 
         self.btn_view_reports = QPushButton("Journal")
         self.btn_view_reports.clicked.connect(self.journal)
-        layout.addWidget(self.btn_view_reports)
+        main_layout.addWidget(self.btn_view_reports)
 
         self.btn_settings = QPushButton("Balance")
         self.btn_settings.clicked.connect(self.balance)
-        layout.addWidget(self.btn_settings)
+        main_layout.addWidget(self.btn_settings)
 
-        self.setLayout(layout)
+        main_menu.setLayout(main_layout)
 
+        # ---------------------------
+        # OTHER SCREENS
+        # ---------------------------
+        self.processing_window = ProcessingWindow()
+        self.journal_window = JournalWindow()
+        self.balance_window = BalanceWindow()
+
+        # Add all screens to stack
+        self.stack.addWidget(main_menu)           # index 0
+        self.stack.addWidget(self.processing_window)  # index 1
+        self.stack.addWidget(self.journal_window)     # index 2
+        self.stack.addWidget(self.balance_window)     # index 3
+
+        # Set initial screen
+        self.stack.setCurrentIndex(0)
+
+        # Root layout
+        root_layout = QVBoxLayout()
+        root_layout.addWidget(self.stack)
+        self.setLayout(root_layout)
+
+    # ---------------------------
+    # NAVIGATION METHODS
+    # ---------------------------
     def processing(self):
-        self.backend.open_processing()
+        self.stack.setCurrentIndex(1)
 
     def journal(self):
-        pass
+        self.stack.setCurrentIndex(2)
 
     def balance(self):
-        pass
+        self.stack.setCurrentIndex(3)
 
 
 if __name__ == "__main__":

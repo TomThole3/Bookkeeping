@@ -6,7 +6,7 @@ class BalanceWindow(QWidget):
     def __init__(self):
         super().__init__()
         
-        self.setWindowTitle("Personal Bookkeeping")
+        self.setWindowTitle("Muntenman Balans")
         self.setGeometry(100, 100, 300, 200)
 
         layout = QVBoxLayout()
