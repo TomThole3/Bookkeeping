@@ -8,7 +8,7 @@ class ProcessingWindow(QWidget):
         super().__init__()
         
         self.stack = stack
-        self.backend = ProcessingWindowBackend()
+        self.backend = ProcessingWindowBackend(self.stack)
         
         self.setWindowTitle("Muntenman Schuifwerk")
         self.setGeometry(100, 100, 300, 200)
