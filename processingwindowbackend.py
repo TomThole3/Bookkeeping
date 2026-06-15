@@ -19,6 +19,9 @@ class ProcessingWindowBackend:
             transactions = self.parser.extract_camt_transactions(path)
             for transaction in transactions:
                 self.db.save_transaction(transaction)
+                
+    def get_all_transactions(self):
+        return self.db.get_uncategorized_transactions()
         
 
 class FileSelectScreen(QWidget):
