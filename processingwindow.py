@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel
+from processingwindowbackend import ProcessingWindowBackend
 
 class ProcessingWindow(QWidget):
     def __init__(self):
         super().__init__()
+        
+        self.backend = ProcessingWindowBackend()
         
         self.setWindowTitle("Muntenman Schuifwerk")
         self.setGeometry(100, 100, 300, 200)
@@ -14,14 +17,14 @@ class ProcessingWindow(QWidget):
         self.label = QLabel("Choose an action:")
         layout.addWidget(self.label)
 
-        self.btn_add_transaction = QPushButton("we gaan schuiven")
-        self.btn_add_transaction.clicked.connect(self.add_entries)
-        layout.addWidget(self.btn_add_transaction)
+        self.btn_add_entries = QPushButton("Add new entries")
+        self.btn_add_entries.clicked.connect(self.add_entries)
+        layout.addWidget(self.btn_add_entries)
 
         self.setLayout(layout)
 
     def add_entries(self):
-        pass
+        self.backend.add_entries()
 
 
 if __name__ == "__main__":
