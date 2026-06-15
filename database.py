@@ -14,7 +14,7 @@ class DatabaseInteractions:
             """
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                reference TEXT,
+                reference TEXT UNIQUE,
                 amount REAL,
                 cdt_dbt TEXT,
                 date TEXT,
@@ -41,8 +41,9 @@ class DatabaseInteractions:
     def save_transaction(self, transaction):
         self.conn.execute(
             """
-            INSERT INTO transactions
-                (reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category)
+            INSERT OR IGNORE INTO transactions
+                (reference, amount, cdt_dbt, date, description,
+                 origin_name, origin_iban, category)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
@@ -78,4 +79,6 @@ class DatabaseInteractions:
             (category,),
         )
         return [Transaction(*row) for row in cursor.fetchall()]
+    
+    
         
