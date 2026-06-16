@@ -13,7 +13,7 @@ class ProcessingWindowBackend:
         for transaction in transactions:
             self.db.save_transaction(transaction)
 
-    def get_all_transactions(self):
+    def get_uncategorized_transactions(self):
         return self.db.get_uncategorized_transactions()
 
     def get_categories(self):
