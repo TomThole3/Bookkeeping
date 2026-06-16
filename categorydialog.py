@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QLabel
+from categorydialogbackend import CategoryDialogBackend
 
 class AddCategoryDialog(QDialog):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Add Category")
+        self.setWindowTitle(" Change categories")
 
         layout = QVBoxLayout()
 
@@ -24,4 +25,7 @@ class AddCategoryDialog(QDialog):
 
     def get_value(self):
         return self.input.text().strip()
+    
+    def accept(self):
+        pass
 
