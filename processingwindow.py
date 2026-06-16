@@ -50,6 +50,7 @@ class ProcessingWindow(QWidget):
 
     def add_entries(self):
         self.backend.add_entries()
+        self.load_transactions()
         
     def change_categories(self):
         self.backend.change_categories()
