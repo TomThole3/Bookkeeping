@@ -127,3 +127,14 @@ class DatabaseInteractions:
         )
         self.conn.commit()
         
+    def get_categorized_transactions(self):
+        cursor = self.conn.execute(
+            """
+            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category
+            FROM transactions
+            WHERE category IS NOT NULL AND category != ''
+            ORDER BY date ASC
+            """
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
+        

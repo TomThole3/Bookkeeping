@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QHeaderView 
 from processingwindowbackend import ProcessingWindowBackend
 
 class ProcessingWindow(QWidget):
@@ -10,10 +9,11 @@ class ProcessingWindow(QWidget):
         
         self.stack = stack
         self.backend = ProcessingWindowBackend(self.stack)
+        self.category_selections = {}  # reference -> category
         
         self.setWindowTitle("Muntenman Schuifwerk")
         self.setGeometry(100, 100, 300, 200)
-
+        
         layout = QVBoxLayout()
 
         self.table = QTableWidget()
@@ -28,6 +28,9 @@ class ProcessingWindow(QWidget):
             "Category"
         ])
         
+        self.table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
+        
         layout.addWidget(self.table)
         self.load_transactions()
 
@@ -39,6 +42,10 @@ class ProcessingWindow(QWidget):
         self.btn_change_categories.clicked.connect(self.change_categories)
         layout.addWidget(self.btn_change_categories)
         
+        self.btn_save_categories = QPushButton("Save categories")
+        self.btn_save_categories.clicked.connect(self.save_categories)
+        layout.addWidget(self.btn_save_categories)
+
         self.setLayout(layout)
 
     def add_entries(self):
@@ -49,10 +56,9 @@ class ProcessingWindow(QWidget):
         self.load_transactions()
         
     def load_transactions(self):
-    
+        self.category_selections = {}  # reset on reload
         transactions = self.backend.get_all_transactions()
         self.table.setRowCount(len(transactions))
-    
         categories = self.backend.get_categories()
     
         for row, t in enumerate(transactions):
@@ -78,28 +84,45 @@ class ProcessingWindow(QWidget):
             self.table.setItem(row, 3, item)
     
             # 4. Origin name (READ ONLY)
-            item = QTableWidgetItem(t.origin_name)
+            item = QTableWidgetItem(t.origin_name or "")
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 4, item)
     
             # 5. Description (EDITABLE)
-            self.table.setItem(
-                row,
-                5,
-                QTableWidgetItem(t.description or "")
-            )
+            self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
     
             # 6. CATEGORY (DROPDOWN)
             combo = QComboBox()
             combo.addItem('')
             combo.addItems(categories)
-            
-            
     
-            # set current value if it exists
             if t.category and t.category in categories:
                 combo.setCurrentText(t.category)
+                self.category_selections[t.reference] = t.category
             else:
-                combo.setCurrentText("Uncategorized")
+                self.category_selections[t.reference] = None
+
+            # store every change in the dict immediately
+            combo.currentTextChanged.connect(
+                lambda text, ref=t.reference: self.category_selections.update({ref: text or None})
+            )
     
             self.table.setCellWidget(row, 6, combo)
+            
+    def save_categories(self):
+        transactions = []
+
+        for row in range(self.table.rowCount()):
+            reference_item = self.table.item(row, 0)
+            description_item = self.table.item(row, 5)
+            if reference_item is None:
+                continue
+
+            reference = reference_item.text()
+            description = description_item.text() if description_item else ""
+            category = self.category_selections.get(reference, None)
+
+            transactions.append((reference, description, category))
+
+        self.backend.save_categories(transactions)
+        self.load_transactions()
