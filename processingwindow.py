@@ -46,13 +46,14 @@ class ProcessingWindow(QWidget):
         
     def change_categories(self):
         self.backend.change_categories()
+        self.load_transactions()
         
     def load_transactions(self):
     
         transactions = self.backend.get_all_transactions()
         self.table.setRowCount(len(transactions))
     
-        categories = ["Uncategorized", "Food", "Rent", "Transport", "Income", "Other"] # Haal deze uit de functie
+        categories = self.backend.get_categories()
     
         for row, t in enumerate(transactions):
     
@@ -90,7 +91,10 @@ class ProcessingWindow(QWidget):
     
             # 6. CATEGORY (DROPDOWN)
             combo = QComboBox()
+            combo.addItem('')
             combo.addItems(categories)
+            
+            
     
             # set current value if it exists
             if t.category and t.category in categories:

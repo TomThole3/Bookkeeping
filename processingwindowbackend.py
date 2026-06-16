@@ -28,7 +28,6 @@ class ProcessingWindowBackend:
         return self.db.get_categories()
     
     def change_categories(self):
-        print("hier gaat die langs")
         dialog = AddCategoryDialog()
         dialog.exec()
         

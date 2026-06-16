@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QListWidget
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QLabel, QListWidget, QMessageBox
 from categorydialogbackend import CategoryDialogBackend
 
 class AddCategoryDialog(QDialog):
@@ -52,6 +52,12 @@ class AddCategoryDialog(QDialog):
     def remove_category(self):
         selected = self.category_list.currentItem()
         if selected:
-            self.backend.remove_category(selected.text())
-            self.load_categories()
-
+            confirm = QMessageBox.question(
+                self,
+                "Confirm removal",
+                f"Are you sure you want to remove '{selected.text()}'?\nThis will decategorize all Transactions with this category",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            if confirm == QMessageBox.StandardButton.Yes:
+                self.backend.remove_category(selected.text())
+                self.load_categories()
