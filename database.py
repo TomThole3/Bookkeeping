@@ -107,4 +107,23 @@ class DatabaseInteractions:
             """
         )
         return [row[0] for row in cursor.fetchall()]
+    
+    def add_category(self, name):
+        self.conn.execute(
+            """
+            INSERT OR IGNORE INTO categories (name)
+            VALUES (?)
+            """,
+            (name,)
+        )
+        self.conn.commit()
+        
+    def remove_category(self, name):
+        self.conn.execute(
+            """
+            DELETE FROM categories WHERE name = ?
+            """,
+            (name,)
+        )
+        self.conn.commit()
         
