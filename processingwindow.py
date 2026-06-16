@@ -65,36 +65,14 @@ class ProcessingWindow(QWidget):
         categories = self.backend.get_categories()
     
         for row, t in enumerate(transactions):
+            self._set_readonly_item(row, 0, t.reference)
+            self._set_readonly_item(row, 1, t.cdt_dbt)
+            self._set_readonly_item(row, 2, t.amount)
+            self._set_readonly_item(row, 3, t.date)
+            self._set_readonly_item(row, 4, t.origin_name or "")
     
-            # 0. Reference (READ ONLY)
-            item = QTableWidgetItem(t.reference)
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 0, item)
-    
-            # 1. C/D (READ ONLY)
-            item = QTableWidgetItem(t.cdt_dbt)
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 1, item)
-    
-            # 2. Amount (READ ONLY)
-            item = QTableWidgetItem(str(t.amount))
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 2, item)
-    
-            # 3. Date (READ ONLY)
-            item = QTableWidgetItem(t.date)
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 3, item)
-    
-            # 4. Origin name (READ ONLY)
-            item = QTableWidgetItem(t.origin_name or "")
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 4, item)
-    
-            # 5. Description (EDITABLE)
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
     
-            # 6. CATEGORY (DROPDOWN)
             combo = QComboBox()
             combo.blockSignals(True)  # don't fire signals while building
             combo.addItem('')
@@ -113,6 +91,11 @@ class ProcessingWindow(QWidget):
             )
             
             self.table.setCellWidget(row, 6, combo)
+            
+    def _set_readonly_item(self, row, col, value):
+        item = QTableWidgetItem(str(value))
+        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        self.table.setItem(row, col, item)
             
     def save_categories(self):
         transactions = []
