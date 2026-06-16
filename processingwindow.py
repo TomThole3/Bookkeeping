@@ -52,12 +52,13 @@ class ProcessingWindow(QWidget):
     def change_categories(self):
         dialog = AddCategoryDialog()
         dialog.exec()
+        self.load_transactions()
         
     def load_transactions(self):
         self.category_selections = {}  # reset on reload
         self.table.clearContents()  # clears all cell widgets and items
         
-        transactions = self.backend.get_all_transactions()
+        transactions = self.backend.get_uncategorized_transactions()
         self.table.setRowCount(len(transactions))
         categories = self.backend.get_categories()
     
@@ -95,30 +96,16 @@ class ProcessingWindow(QWidget):
             
     def save_categories(self):
         transactions = []
-
         for row in range(self.table.rowCount()):
-            reference_item = self.table.item(row, 0)
-            description_item = self.table.item(row, 5)
-            if reference_item is None:
-                continue
-
-            reference = reference_item.text()
-            description = description_item.text() if description_item else ""
-            category = self.category_selections.get(reference, None)
-
+            reference = self.table.item(row, 0).text()
+            description = self.table.item(row, 5).text()
+            category = self.category_selections.get(reference)
             transactions.append((reference, description, category))
-
         self.backend.save_categories(transactions)
         self.load_transactions()
-        
+            
     def add_entries(self):
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select a file",
-            "",
-            "CAMT Files (*.xml);;All Files (*)"
-        )
-    
+        path, _ = QFileDialog.getOpenFileName(self, "Select a file", "", "CAMT Files (*.xml);;All Files (*)")
         if path:
             self.backend.import_transactions_from_file(path)
             self.load_transactions()
