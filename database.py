@@ -88,13 +88,7 @@ class DatabaseInteractions:
                 category = ?
             WHERE reference = ?
             """,
-            [(
-                    t.description,
-                    t.category,
-                    t.reference,
-                )
-                for t in transactions
-            ]
+            [(description, category, reference) for reference, description, category in transactions]
         )
         self.conn.commit()
     
