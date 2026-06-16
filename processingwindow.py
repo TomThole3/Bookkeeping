@@ -57,6 +57,8 @@ class ProcessingWindow(QWidget):
         
     def load_transactions(self):
         self.category_selections = {}  # reset on reload
+        self.table.clearContents()  # clears all cell widgets and items
+        
         transactions = self.backend.get_all_transactions()
         self.table.setRowCount(len(transactions))
         categories = self.backend.get_categories()
@@ -93,20 +95,22 @@ class ProcessingWindow(QWidget):
     
             # 6. CATEGORY (DROPDOWN)
             combo = QComboBox()
+            combo.blockSignals(True)  # don't fire signals while building
             combo.addItem('')
             combo.addItems(categories)
-    
+            
             if t.category and t.category in categories:
                 combo.setCurrentText(t.category)
                 self.category_selections[t.reference] = t.category
             else:
                 self.category_selections[t.reference] = None
-
-            # store every change in the dict immediately
+            
+            combo.blockSignals(False)  # re-enable signals before connecting
+            
             combo.currentTextChanged.connect(
                 lambda text, ref=t.reference: self.category_selections.update({ref: text or None})
             )
-    
+            
             self.table.setCellWidget(row, 6, combo)
             
     def save_categories(self):
