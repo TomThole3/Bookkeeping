@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QLabel, QFileDial
 from camt_parser import CAMTParser
 from database import DatabaseInteractions
 from transaction import Transaction
+from categorydialog import AddCategoryDialog
 
 
 class ProcessingWindowBackend:
@@ -25,6 +26,11 @@ class ProcessingWindowBackend:
     
     def get_categories(self):
         return self.db.get_categories()
+    
+    def change_categories(self):
+        print("hier gaat die langs")
+        dialog = AddCategoryDialog()
+        dialog.exec()
         
 
 class FileSelectScreen(QWidget):

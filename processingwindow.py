@@ -35,10 +35,17 @@ class ProcessingWindow(QWidget):
         self.btn_add_entries.clicked.connect(self.add_entries)
         layout.addWidget(self.btn_add_entries)
         
+        self.btn_change_categories = QPushButton("Add/Remove Categories")
+        self.btn_change_categories.clicked.connect(self.change_categories)
+        layout.addWidget(self.btn_change_categories)
+        
         self.setLayout(layout)
 
     def add_entries(self):
         self.backend.add_entries()
+        
+    def change_categories(self):
+        self.backend.change_categories()
         
     def load_transactions(self):
     

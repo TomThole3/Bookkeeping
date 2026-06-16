@@ -60,7 +60,6 @@ class DatabaseInteractions:
         self.conn.commit()
         
     def get_uncategorized_transactions(self):
-        print('a')
         cursor = self.conn.execute(
             """
             SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category
