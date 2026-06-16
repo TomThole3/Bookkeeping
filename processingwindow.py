@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QHeaderView 
+from PyQt6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QHeaderView, QFileDialog 
 from processingwindowbackend import ProcessingWindowBackend
+from categorydialog import AddCategoryDialog
 
 class ProcessingWindow(QWidget):
     def __init__(self, stack):
         super().__init__()
         
         self.stack = stack
-        self.backend = ProcessingWindowBackend(self.stack)
+        self.backend = ProcessingWindowBackend()
         self.category_selections = {}  # reference -> category
         
         self.setWindowTitle("Muntenman Schuifwerk")
@@ -47,14 +48,10 @@ class ProcessingWindow(QWidget):
         layout.addWidget(self.btn_save_categories)
 
         self.setLayout(layout)
-
-    def add_entries(self):
-        self.backend.add_entries()
-        self.load_transactions()
         
     def change_categories(self):
-        self.backend.change_categories()
-        self.load_transactions()
+        dialog = AddCategoryDialog()
+        dialog.exec()
         
     def load_transactions(self):
         self.category_selections = {}  # reset on reload
@@ -70,11 +67,8 @@ class ProcessingWindow(QWidget):
             self._set_readonly_item(row, 2, t.amount)
             self._set_readonly_item(row, 3, t.date)
             self._set_readonly_item(row, 4, t.origin_name or "")
-    
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
-    
             combo = self._create_category_combobox(t.reference, t.category, categories)
-            
             self.table.setCellWidget(row, 6, combo)
             
     def _set_readonly_item(self, row, col, value):
@@ -116,3 +110,15 @@ class ProcessingWindow(QWidget):
 
         self.backend.save_categories(transactions)
         self.load_transactions()
+        
+    def add_entries(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select a file",
+            "",
+            "CAMT Files (*.xml);;All Files (*)"
+        )
+    
+        if path:
+            self.backend.import_transactions_from_file(path)
+            self.load_transactions()
