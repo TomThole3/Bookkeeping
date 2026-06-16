@@ -73,22 +73,7 @@ class ProcessingWindow(QWidget):
     
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
     
-            combo = QComboBox()
-            combo.blockSignals(True)  # don't fire signals while building
-            combo.addItem('')
-            combo.addItems(categories)
-            
-            if t.category and t.category in categories:
-                combo.setCurrentText(t.category)
-                self.category_selections[t.reference] = t.category
-            else:
-                self.category_selections[t.reference] = None
-            
-            combo.blockSignals(False)  # re-enable signals before connecting
-            
-            combo.currentTextChanged.connect(
-                lambda text, ref=t.reference: self.category_selections.update({ref: text or None})
-            )
+            combo = self._create_category_combobox(t.reference, t.category, categories)
             
             self.table.setCellWidget(row, 6, combo)
             
@@ -96,6 +81,23 @@ class ProcessingWindow(QWidget):
         item = QTableWidgetItem(str(value))
         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         self.table.setItem(row, col, item)
+        
+    def _create_category_combobox(self, reference, category, categories):
+        combo = QComboBox()
+        combo.blockSignals(True)
+        combo.addItem("")
+        combo.addItems(categories)
+        if category and category in categories:
+            combo.setCurrentText(category)
+            self.category_selections[reference] = category
+        else:
+            self.category_selections[reference] = None
+        combo.blockSignals(False)
+        combo.currentTextChanged.connect(
+            lambda text, ref=reference:
+            self.category_selections.update({ref: text or None})
+        )
+        return combo
             
     def save_categories(self):
         transactions = []
