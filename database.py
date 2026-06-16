@@ -119,6 +119,12 @@ class DatabaseInteractions:
             """,
             (name,)
         )
+        self.conn.execute(
+            """
+            UPDATE transactions SET category = NULL WHERE category = ?
+            """,
+            (name,)
+        )
         self.conn.commit()
         
     def get_categorized_transactions(self):
