@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 class Category:
-    def __init__(self, name, parent=None):
+    def __init__(self, id_, name, parent=None):
+        self.id_ = id_
         self.name = name
         self.parent = parent
         self.children = []
@@ -15,3 +16,13 @@ class Category:
     
     def __str__(self):
         return self.name
+    
+    @staticmethod
+    def build_tree(categories):
+        lookup = {c.id: c for c in categories}
+        for c in categories:
+            if c.parent_id is not None:
+                parent = lookup[c.parent_id]
+                c.parent = parent
+                parent.children.append(c)
+        return [c for c in categories if c.parent_id is None]

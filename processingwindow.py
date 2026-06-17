@@ -87,17 +87,18 @@ class ProcessingWindow(QWidget):
     def _create_category_combobox(self, reference, category, categories):
         combo = QComboBox()
         combo.blockSignals(True)
-        combo.addItem("")
-        combo.addItems(categories)
-        if category and category in categories:
-            combo.setCurrentText(category)
-            self.category_selections[reference] = category
-        else:
-            self.category_selections[reference] = None
+        combo.addItem("", None)  # second arg is user data (the id)
+        for cat in categories:
+            combo.addItem(cat.name, cat.id)  # display name, store id as user data
+        if category:
+            index = combo.findData(category.id)
+            if index >= 0:
+                combo.setCurrentIndex(index)
+        self.category_selections[reference] = category.id if category else None
         combo.blockSignals(False)
-        combo.currentTextChanged.connect(
-            lambda text, ref=reference:
-            self.category_selections.update({ref: text or None})
+        combo.currentIndexChanged.connect(
+            lambda index, ref=reference:
+            self.category_selections.update({ref: combo.itemData(index)})
         )
         return combo
             
