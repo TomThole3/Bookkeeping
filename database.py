@@ -23,7 +23,6 @@ class DatabaseInteractions:
             origin_name TEXT,
             origin_iban TEXT,
             category_id INTEGER REFERENCES categories(id)
-                )
             )
             """
         )

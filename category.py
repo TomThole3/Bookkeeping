@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 class Category:
-    def __init__(self, id_, name, parent=None):
-        self.id_ = id_
+    def __init__(self, name, id=None, parent_id=None):
+        self.id = id
         self.name = name
-        self.parent = parent
-        self.children = []
-        if parent is not None:
-            parent.children.append(self)
+        self.parent_id = parent_id  # raw foreign key from DB
+        self.parent = None          # set by build_tree
+        self.children = []          # set by build_tree
 
     def full_path(self):
         if self.parent is None:
