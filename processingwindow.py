@@ -46,6 +46,10 @@ class ProcessingWindow(QWidget):
         self.btn_save_categories = QPushButton("Save categories")
         self.btn_save_categories.clicked.connect(self.save_categories)
         layout.addWidget(self.btn_save_categories)
+        
+        self.btn_return = QPushButton("Return to mainscreen")
+        self.btn_return.clicked.connect(self.main_screen)
+        layout.addWidget(self.btn_return)
 
         self.setLayout(layout)
         
@@ -117,3 +121,6 @@ class ProcessingWindow(QWidget):
         if path:
             self.backend.import_transactions_from_file(path)
             self.load_transactions()
+            
+    def main_screen(self):
+        self.stack.setCurrentIndex(0)
