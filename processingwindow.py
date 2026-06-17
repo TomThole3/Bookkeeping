@@ -23,7 +23,7 @@ class ProcessingWindow(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
-            "Reference", "CrdtDbt", "Amount", "Date", "Origin", "Description", "Category", "Split"
+            "Reference", "CrdtDbt", "Amount", "Date", "counterparty", "Description", "Category", "Split"
         ])
         self.table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
@@ -80,7 +80,7 @@ class ProcessingWindow(QWidget):
             self._set_readonly_item(row, 0, transaction.reference)
             self._set_readonly_item(row, 1, transaction.cdt_dbt)
             self._set_readonly_item(row, 3, transaction.date)
-            self._set_readonly_item(row, 4, transaction.origin_name or "")
+            self._set_readonly_item(row, 4, transaction.counterparty_name or "")
             self.table.setItem(row, 5, QTableWidgetItem(transaction.description or ""))
         else:
             for col in [0, 1, 3, 4, 5]:

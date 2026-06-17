@@ -19,7 +19,7 @@ class JournalWindow(QWidget):
             "CrdtDbt",
             "Amount",
             "Date",
-            "Origin",
+            "counterparty",
             "Description",
             "Category"
         ])
@@ -38,6 +38,6 @@ class JournalWindow(QWidget):
             self.table.setItem(row, 1, QTableWidgetItem(t.cdt_dbt))
             self.table.setItem(row, 2, QTableWidgetItem(str(t.amount)))
             self.table.setItem(row, 3, QTableWidgetItem(t.date))
-            self.table.setItem(row, 4, QTableWidgetItem(t.origin_name or ""))
+            self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
             self.table.setItem(row, 6, QTableWidgetItem(t.category_id or ""))

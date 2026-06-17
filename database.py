@@ -29,8 +29,8 @@ class DatabaseInteractions:
                 cdt_dbt TEXT,
                 date TEXT,
                 description TEXT,
-                origin_name TEXT,
-                origin_iban TEXT,
+                counterparty_name TEXT,
+                counterparty_iban TEXT,
                 category_id INTEGER REFERENCES categories(id),
                 is_split INTEGER DEFAULT 0
             )
@@ -46,7 +46,7 @@ class DatabaseInteractions:
             """
             INSERT OR IGNORE INTO transactions
                 (reference, amount, cdt_dbt, date, description,
-                 origin_name, origin_iban)
+                 counterparty_name, counterparty_iban)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
@@ -55,8 +55,8 @@ class DatabaseInteractions:
                 transaction.cdt_dbt,
                 transaction.date,
                 transaction.description,
-                transaction.origin_name,
-                transaction.origin_iban,
+                transaction.counterparty_name,
+                transaction.counterparty_iban,
             ),
         )
         self.conn.commit()
@@ -64,7 +64,7 @@ class DatabaseInteractions:
     def get_uncategorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id
+            SELECT reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id
             FROM transactions
             WHERE category_id IS NULL AND is_split = 0
             """
@@ -74,7 +74,7 @@ class DatabaseInteractions:
     def get_transactions_by_category(self, category_id):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id
+            SELECT reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id
             FROM transactions
             WHERE category_id = ?
             """,
@@ -109,8 +109,8 @@ class DatabaseInteractions:
             """
             INSERT INTO transactions
                 (reference, amount, cdt_dbt, date, description,
-                 origin_name, origin_iban, category_id, is_split)
-            SELECT ?, ?, cdt_dbt, date, ?, origin_name, origin_iban, ?, 1
+                 counterparty_name, counterparty_iban, category_id, is_split)
+            SELECT ?, ?, cdt_dbt, date, ?, counterparty_name, counterparty_iban, ?, 1
             FROM transactions
             WHERE reference = ?
             """,
@@ -177,7 +177,7 @@ class DatabaseInteractions:
         cursor = self.conn.execute(
             """
             SELECT t.reference, t.amount, t.cdt_dbt, t.date, t.description,
-                   t.origin_name, t.origin_iban, c.name
+                   t.counterparty_name, t.counterparty_iban, c.name
             FROM transactions t
             LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.category_id IS NOT NULL
