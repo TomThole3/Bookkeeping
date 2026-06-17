@@ -13,6 +13,15 @@ class DatabaseInteractions:
     def _create_tables(self):
         self.conn.execute(
             """
+            CREATE TABLE IF NOT EXISTS categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            parent_id INTEGER REFERENCES categories(id)
+            )
+            """
+        )
+        self.conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             reference TEXT UNIQUE,
@@ -26,15 +35,6 @@ class DatabaseInteractions:
             )
             """
         )
-        self.conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS categories (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            parent_id INTEGER REFERENCES categories(id)
-            )
-            """
-        )
         self.conn.commit()
        
     def close(self):
@@ -45,7 +45,7 @@ class DatabaseInteractions:
             """
             INSERT OR IGNORE INTO transactions
                 (reference, amount, cdt_dbt, date, description,
-                 origin_name, origin_iban, category)
+                 origin_name, origin_iban, category_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
@@ -64,21 +64,21 @@ class DatabaseInteractions:
     def get_uncategorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category
+            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id
             FROM transactions
-            WHERE category IS NULL
+            WHERE category_id IS NULL
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     
-    def get_transactions_by_category(self, category):
+    def get_transactions_by_category(self, category_id):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category
+            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id
             FROM transactions
-            WHERE category = ?
+            WHERE category_id = ?
             """,
-            (category,),
+            (category_id,),
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     
@@ -87,10 +87,10 @@ class DatabaseInteractions:
             """
             UPDATE transactions
             SET description = ?,
-                category = ?
+                category_id = ?
             WHERE reference = ?
             """,
-            [(description, category, reference) for reference, description, category in transactions]
+            [(description, category_id, reference) for reference, description, category_id in transactions]
         )
         self.conn.commit()
     
@@ -144,9 +144,9 @@ class DatabaseInteractions:
     def get_categorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category
+            SELECT reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id
             FROM transactions
-            WHERE category IS NOT NULL AND category != ''
+            WHERE category_id IS NOT NULL AND category_id != ''
             ORDER BY date ASC
             """
         )
