@@ -55,22 +55,29 @@ class ProcessingWindow(QWidget):
         self.load_transactions()
         
     def load_transactions(self):
-        self.category_selections = {}  # reset on reload
-        self.table.clearContents()  # clears all cell widgets and items
-        
+        self._reset_table()
         transactions = self.backend.get_uncategorized_transactions()
-        self.table.setRowCount(len(transactions))
         categories = self.backend.get_categories()
+        self._populate_table(transactions, categories)
     
+    def _reset_table(self):
+        self.category_selections = {}
+        self.table.clearContents()
+    
+    def _populate_table(self, transactions, categories):
+        self.table.setRowCount(len(transactions))
         for row, t in enumerate(transactions):
-            self._set_readonly_item(row, 0, t.reference)
-            self._set_readonly_item(row, 1, t.cdt_dbt)
-            self._set_readonly_item(row, 2, t.amount)
-            self._set_readonly_item(row, 3, t.date)
-            self._set_readonly_item(row, 4, t.origin_name or "")
-            self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
-            combo = self._create_category_combobox(t.reference, t.category, categories)
-            self.table.setCellWidget(row, 6, combo)
+            self._populate_row(row, t, categories)
+    
+    def _populate_row(self, row, transaction, categories):
+        self._set_readonly_item(row, 0, transaction.reference)
+        self._set_readonly_item(row, 1, transaction.cdt_dbt)
+        self._set_readonly_item(row, 2, transaction.amount)
+        self._set_readonly_item(row, 3, transaction.date)
+        self._set_readonly_item(row, 4, transaction.origin_name or "")
+        self.table.setItem(row, 5, QTableWidgetItem(transaction.description or ""))
+        combo = self._create_category_combobox(transaction.reference, transaction.category, categories)
+        self.table.setCellWidget(row, 6, combo)
             
     def _set_readonly_item(self, row, col, value):
         item = QTableWidgetItem(str(value))
