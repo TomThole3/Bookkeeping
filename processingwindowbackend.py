@@ -20,6 +20,11 @@ class ProcessingWindowBackend:
         return self.db.get_categories()
 
     def save_categories(self, transactions):
-        self.db.update_transactions(transactions)
+        for reference, description, category_id, amount, is_split in transactions:
+            if is_split:
+                self.db._save_split_transaction(reference, description, category_id, amount)
+                self.db.remove_splitted_item(reference)
+            else:
+                self.db.update_transactions(description, category_id, reference)
         
 

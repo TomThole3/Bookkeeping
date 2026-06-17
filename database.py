@@ -82,21 +82,16 @@ class DatabaseInteractions:
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     
-    def update_transactions(self, transactions):
-        for reference, description, category_id, amount, is_split in transactions:
-            if is_split:
-                self._save_split_transaction(reference, description, category_id, amount)
-                self._mark_original_as_split(reference)
-            else:
-                self.conn.execute(
-                    """
-                    UPDATE transactions
-                    SET description = ?,
-                        category_id = ?
-                    WHERE reference = ?
-                    """,
-                    (description, category_id, reference)
-                )
+    def update_transactions(self, description, category_id, reference):
+        self.conn.execute(
+            """
+            UPDATE transactions
+            SET description = ?,
+                category_id = ?
+            WHERE reference = ?
+            """,
+            (description, category_id, reference)
+        )
         self.conn.commit()
 
     def _save_split_transaction(self, reference, description, category_id, amount):
@@ -122,15 +117,14 @@ class DatabaseInteractions:
             (split_reference, amount, description, category_id, reference)
         )
 
-    def _mark_original_as_split(self, reference):
+    def remove_splitted_item(self, reference):
         self.conn.execute(
-            """
-            UPDATE transactions
-            SET is_split = 1
-            WHERE reference = ? AND is_split = 0
-            """,
-            (reference,)
-        )
+        """
+        DELETE FROM transactions
+        WHERE reference = ? AND is_split = 0
+        """,
+        (reference,)
+    )
 
     def get_categories(self):
         cursor = self.conn.execute(
