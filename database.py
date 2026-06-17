@@ -110,13 +110,12 @@ class DatabaseInteractions:
         )
         count = cursor.fetchone()[0]
         split_reference = f"{reference}-{count + 1}"
-        print(reference)
         self.conn.execute(
             """
             INSERT INTO transactions
                 (reference, amount, cdt_dbt, date, description,
                  origin_name, origin_iban, category_id, is_split)
-            SELECT ?, ?, cdt_dbt, date, ?, origin_name, origin_iban, ?, 0
+            SELECT ?, ?, cdt_dbt, date, ?, origin_name, origin_iban, ?, 1
             FROM transactions
             WHERE reference = ?
             """,
