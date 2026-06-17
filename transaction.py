@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-
 class Transaction:
     
-    def __init__(self, reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category = None):
+    def __init__(self, reference, amount, cdt_dbt, date, description, origin_name, origin_iban, category_id=None, is_split=False):
         self.reference = reference
         self.amount = amount
         self.cdt_dbt = cdt_dbt
@@ -10,7 +9,8 @@ class Transaction:
         self.description = description
         self.origin_name = origin_name
         self.origin_iban = origin_iban
-        self.category = category
+        self.category_id = category_id
+        self.is_split = is_split
         
     @classmethod
     def from_dict(cls, entry):
@@ -22,4 +22,4 @@ class Transaction:
             description=entry["AddtlNtryInf"],
             origin_name=entry.get("Counterparty_Name"),
             origin_iban=entry.get("Counterparty_IBAN")
-            )
+        )
