@@ -43,13 +43,14 @@ class ProcessingWindowBackend:
         transactions = self.group_by_reference(transactions)
         for sublist in transactions:
             if len(sublist) > 1:
-                original_amount = Decimal(str(self.db.get_amount(sublist[0].reference)))  
-                validate = self.validate(sublist, original_amount)
+                original_amount, iban = self.db.get_amount_and_iban(sublist[0].reference)
+                validate = self.validate(sublist, Decimal(str(original_amount)))
                 if abs(validate) > Decimal("0.01"):  
                     self.processingwindow.show_sum_error(validate)
                     continue
                 self.db.update_split_parent(sublist[0].reference)
                 for i in range(len(sublist)):
+                    sublist[i].counterparty_iban = iban
                     sublist[i].reference = f'{sublist[i].reference}-{i+1}'
                     sublist[i].is_split = 1
                     self.db.save_transaction(sublist[i])
