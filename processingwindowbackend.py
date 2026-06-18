@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from camt_parser import CAMTParser
 from database import DatabaseInteractions
+from transaction import Transaction
+from collections import defaultdict
+from decimal import Decimal
 
 class ProcessingWindowBackend:
 
-    def __init__(self):
+    def __init__(self, processingwindow):
         self.parser = CAMTParser()
         self.db = DatabaseInteractions()
+        self.processingwindow = processingwindow
 
     def import_transactions_from_file(self, path):
         transactions = self.parser.extract_camt_transactions(path)
@@ -19,12 +23,53 @@ class ProcessingWindowBackend:
     def get_categories(self):
         return self.db.get_categories()
 
-    def save_categories(self, transactions):
-        for reference, description, category_id, amount, is_split in transactions:
-            if is_split:
-                self.db._save_split_transaction(reference, description, category_id, amount)
-                self.db.remove_splitted_item(reference)
+    def save_categories(self, rows):
+        rows = [row for row in rows if row.get('category_id') is not None]
+    
+        transactions = []
+        for row in rows:
+            t = Transaction(
+                reference=row["reference"],
+                amount=row["amount"],
+                cdt_dbt=row.get("cdt_dbt"),
+                date=row.get("date"),
+                description=row.get("description"),
+                counterparty_name=row.get("counterparty"),
+                counterparty_iban=None,
+            )
+            t.category_id = row.get("category_id")
+            transactions.append(t)
+            
+        transactions = self.group_by_reference(transactions)
+        for sublist in transactions:
+            if len(sublist) > 1:
+                original_amount = Decimal(str(self.db.get_amount(sublist[0].reference)))  
+                validate = self.validate(sublist, original_amount)
+                if abs(validate) > Decimal("0.01"):  
+                    self.processingwindow.show_sum_error(validate)
+                    continue
+                self.db.update_split_parent(sublist[0].reference)
+                for i in range(len(sublist)):
+                    sublist[i].reference = f'{sublist[i].reference}-{i+1}'
+                    sublist[i].is_split = 1
+                    self.db.save_transaction(sublist[i])
             else:
-                self.db.update_transactions(description, category_id, reference)
+                self.db.update_transaction(sublist[0])
+    
+    def group_by_reference(self, transactions):
+        groups = defaultdict(list)
+    
+        for t in transactions:
+            groups[t.reference].append(t)
+    
+        return list(groups.values())
+
+    
+    def validate(self, sublist, amount):
+        total = sum(t.amount for t in sublist)
+        return float(Decimal(str(total)) - Decimal(str(amount)))
+    
+                    
+    
         
 

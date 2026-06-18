@@ -23,3 +23,9 @@ class Transaction:
             counterparty_name=entry.get("Counterparty_Name"),
             counterparty_iban=entry.get("Counterparty_IBAN")
         )
+    
+    def __repr__(self):
+        return ", ".join([
+            str(self.reference),
+        ])
+        

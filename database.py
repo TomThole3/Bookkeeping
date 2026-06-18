@@ -1,15 +1,24 @@
 # -*- coding: utf-8 -*-
-
 import sqlite3
+
 from transaction import Transaction
 from category import Category
 
+
 class DatabaseInteractions:
-    
+
+    # ------------------------------------------------------------------
+    # Initialization
+    # ------------------------------------------------------------------
+
     def __init__(self, db_path="transactions.db"):
         self.conn = sqlite3.connect(db_path)
         self._create_tables()
-       
+
+    # ------------------------------------------------------------------
+    # Private methods
+    # ------------------------------------------------------------------
+
     def _create_tables(self):
         self.conn.execute(
             """
@@ -37,17 +46,45 @@ class DatabaseInteractions:
             """
         )
         self.conn.commit()
-       
-    def close(self):
-        self.conn.close()
-    
+
+    def _remove_category_recursive(self, category_id):
+        cursor = self.conn.execute(
+            """
+            SELECT id FROM categories WHERE parent_id = ?
+            """,
+            (category_id,)
+        )
+        for row in cursor.fetchall():
+            self._remove_category_recursive(row[0])
+
+        self.conn.execute(
+            """
+            UPDATE transactions
+            SET category_id = NULL
+            WHERE category_id = ?
+            """,
+            (category_id,)
+        )
+
+        self.conn.execute(
+            """
+            DELETE FROM categories
+            WHERE id = ?
+            """,
+            (category_id,)
+        )
+
+    # ------------------------------------------------------------------
+    # Transaction methods
+    # ------------------------------------------------------------------
+
     def save_transaction(self, transaction):
         self.conn.execute(
             """
             INSERT OR IGNORE INTO transactions
                 (reference, amount, cdt_dbt, date, description,
-                 counterparty_name, counterparty_iban)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                 counterparty_name, counterparty_iban, category_id, is_split)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 transaction.reference,
@@ -57,32 +94,13 @@ class DatabaseInteractions:
                 transaction.description,
                 transaction.counterparty_name,
                 transaction.counterparty_iban,
+                transaction.category_id,
+                transaction.is_split,
             ),
         )
         self.conn.commit()
-        
-    def get_uncategorized_transactions(self):
-        cursor = self.conn.execute(
-            """
-            SELECT reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id
-            FROM transactions
-            WHERE category_id IS NULL AND is_split = 0
-            """
-        )
-        return [Transaction(*row) for row in cursor.fetchall()]
-    
-    def get_transactions_by_category(self, category_id):
-        cursor = self.conn.execute(
-            """
-            SELECT reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id
-            FROM transactions
-            WHERE category_id = ?
-            """,
-            (category_id,),
-        )
-        return [Transaction(*row) for row in cursor.fetchall()]
-    
-    def update_transactions(self, description, category_id, reference):
+
+    def update_transaction(self, transaction):
         self.conn.execute(
             """
             UPDATE transactions
@@ -90,41 +108,76 @@ class DatabaseInteractions:
                 category_id = ?
             WHERE reference = ?
             """,
-            (description, category_id, reference)
+            (
+                transaction.description,
+                transaction.category_id,
+                transaction.reference,
+            )
+        )
+        self.conn.commit()
+        
+    def update_split_parent(self, reference):
+        self.conn.execute(
+            """
+            UPDATE transactions
+            SET is_split = 1
+            WHERE reference = ?
+            """,
+            (reference,),
         )
         self.conn.commit()
 
-    def _save_split_transaction(self, reference, description, category_id, amount):
-        # Find how many split parts already exist to determine the suffix
+    def get_uncategorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT COUNT(*) FROM transactions
-            WHERE reference LIKE ?
-            """,
-            (reference + "-%",)
-        )
-        count = cursor.fetchone()[0]
-        split_reference = f"{reference}-{count + 1}"
-        self.conn.execute(
+            SELECT reference, amount, cdt_dbt, date, description,
+                   counterparty_name, counterparty_iban, category_id
+            FROM transactions
+            WHERE category_id IS NULL AND is_split = 0
             """
-            INSERT INTO transactions
-                (reference, amount, cdt_dbt, date, description,
-                 counterparty_name, counterparty_iban, category_id, is_split)
-            SELECT ?, ?, cdt_dbt, date, ?, counterparty_name, counterparty_iban, ?, 1
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
+
+    def get_categorized_transactions(self):
+        cursor = self.conn.execute(
+            """
+            SELECT t.reference, t.amount, t.cdt_dbt, t.date,
+                   t.description, t.counterparty_name,
+                   t.counterparty_iban, c.name
+            FROM transactions t
+            LEFT JOIN categories c ON t.category_id = c.id
+            WHERE t.category_id IS NOT NULL
+            ORDER BY t.date ASC
+            """
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
+
+    def get_transactions_by_category(self, category_id):
+        cursor = self.conn.execute(
+            """
+            SELECT reference, amount, cdt_dbt, date, description,
+                   counterparty_name, counterparty_iban, category_id
+            FROM transactions
+            WHERE category_id = ?
+            """,
+            (category_id,),
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
+    
+    def get_amount(self, reference):
+        cursor = self.conn.execute(
+            """ 
+            SELECT amount
             FROM transactions
             WHERE reference = ?
             """,
-            (split_reference, amount, description, category_id, reference)
-        )
+            (reference,),
+            )
+        return cursor.fetchone()[0]
 
-    def remove_splitted_item(self, reference):
-        self.conn.execute(
-        """
-        DELETE FROM transactions
-        WHERE reference = ? AND is_split = 0
-        """,
-        (reference,)
-    )
+    # ------------------------------------------------------------------
+    # Category methods
+    # ------------------------------------------------------------------
 
     def get_categories(self):
         cursor = self.conn.execute(
@@ -133,8 +186,11 @@ class DatabaseInteractions:
             FROM categories
             """
         )
-        return [Category(id=row[0], name=row[1], parent_id=row[2]) for row in cursor.fetchall()]
-    
+        return [
+            Category(id=row[0], name=row[1], parent_id=row[2])
+            for row in cursor.fetchall()
+        ]
+
     def add_category(self, category):
         cursor = self.conn.execute(
             """
@@ -150,38 +206,10 @@ class DatabaseInteractions:
     def remove_category(self, category_id):
         self._remove_category_recursive(category_id)
         self.conn.commit()
-    
-    def _remove_category_recursive(self, category_id):
-        cursor = self.conn.execute(
-            """
-            SELECT id FROM categories WHERE parent_id = ?
-            """,
-            (category_id,)
-        )
-        for row in cursor.fetchall():
-            self._remove_category_recursive(row[0])
-        self.conn.execute(
-            """
-            UPDATE transactions SET category_id = NULL WHERE category_id = ?
-            """,
-            (category_id,)
-        )
-        self.conn.execute(
-            """
-            DELETE FROM categories WHERE id = ?
-            """,
-            (category_id,)
-        )
-        
-    def get_categorized_transactions(self):
-        cursor = self.conn.execute(
-            """
-            SELECT t.reference, t.amount, t.cdt_dbt, t.date, t.description,
-                   t.counterparty_name, t.counterparty_iban, c.name
-            FROM transactions t
-            LEFT JOIN categories c ON t.category_id = c.id
-            WHERE t.category_id IS NOT NULL
-            ORDER BY t.date ASC
-            """
-        )
-        return [Transaction(*row) for row in cursor.fetchall()]
+
+    # ------------------------------------------------------------------
+    # Cleanup
+    # ------------------------------------------------------------------
+
+    def close(self):
+        self.conn.close()

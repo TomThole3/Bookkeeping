@@ -10,7 +10,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Muntenman Centraal")
-        self.setGeometry(100, 100, 300, 200)
+        self.setGeometry(0, 0, 1800, 1000)
 
         # ---------------------------
         # STACKED WIDGET (navigation)
