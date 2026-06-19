@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton
 from journalwindowbackend import JournalWindowBackend
 
 class JournalWindow(QWidget):
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__()
         self.backend = JournalWindowBackend()
+        self.stack = stack
 
         self.setWindowTitle("Muntenman Journaal")
         self.setGeometry(100, 100, 800, 600)
         layout = QVBoxLayout()
 
+        self.btn_return = QPushButton("Return to mainscreen")
+        self.btn_return.clicked.connect(self._main_screen)
+        layout.addWidget(self.btn_return)
+        
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
@@ -27,7 +32,6 @@ class JournalWindow(QWidget):
 
         layout.addWidget(self.table)
         self.setLayout(layout)
-        self.load_transactions()
 
     def load_transactions(self):
         transactions = self.backend.get_categorized_transactions()
@@ -41,3 +45,6 @@ class JournalWindow(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
             self.table.setItem(row, 6, QTableWidgetItem(t.category_id or ""))
+            
+    def _main_screen(self):
+        self.stack.setCurrentIndex(0)

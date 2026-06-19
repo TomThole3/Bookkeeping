@@ -164,16 +164,16 @@ class DatabaseInteractions:
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     
-    def get_amount(self, reference):
+    def get_amount_and_iban(self, reference):
         cursor = self.conn.execute(
             """ 
-            SELECT amount
+            SELECT amount, counterparty_iban
             FROM transactions
             WHERE reference = ?
             """,
             (reference,),
             )
-        return cursor.fetchone()[0]
+        return cursor.fetchone()
 
     # ------------------------------------------------------------------
     # Category methods
