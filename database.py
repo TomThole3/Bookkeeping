@@ -151,16 +151,27 @@ class DatabaseInteractions:
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
-
+    
     def get_transactions_by_category(self, category_id):
+       cursor = self.conn.execute(
+           """
+           SELECT reference, amount, cdt_dbt, date, description,
+                  counterparty_name, counterparty_iban, category_id
+           FROM transactions
+           WHERE category_id = ?
+           """,
+           (category_id,),
+       )
+       return [Transaction(*row) for row in cursor.fetchall()]
+    
+    def get_transactions_with_category_ids(self):
         cursor = self.conn.execute(
             """
             SELECT reference, amount, cdt_dbt, date, description,
                    counterparty_name, counterparty_iban, category_id
             FROM transactions
-            WHERE category_id = ?
-            """,
-            (category_id,),
+            WHERE category_id IS NOT NULL
+            """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     

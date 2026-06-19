@@ -8,6 +8,7 @@ class JournalWindowBackend:
 
     def load_transactions(self):
         self._transactions = self.db.get_categorized_transactions()
+        self._transactions.sort(key=lambda t: t.date, reverse=True)
 
     def get_categories(self) -> list[str]:
         return sorted({t.category_id for t in self._transactions if t.category_id})

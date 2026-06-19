@@ -41,7 +41,7 @@ class MainWindow(QWidget):
         # ---------------------------
         self.processing_window = ProcessingWindow(self.stack)
         self.journal_window = JournalWindow(self.stack)
-        self.balance_window = BalanceWindow()
+        self.balance_window = BalanceWindow(self.stack)
 
         # Add all screens to stack
         self.stack.addWidget(main_menu)               # index 0
@@ -68,6 +68,7 @@ class MainWindow(QWidget):
         self.stack.setCurrentIndex(2)
 
     def balance(self):
+        self.balance_window.load_categories()
         self.stack.setCurrentIndex(3)
 
 

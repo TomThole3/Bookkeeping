@@ -1,0 +1,66 @@
+# -*- coding: utf-8 -*-
+from database import DatabaseInteractions
+from category import Category
+
+class CategoryTotals:
+    """Holds computed income/expenditure/net for one category (descendants included)."""
+    def __init__(self):
+        self.income = 0.0
+        self.expenditure = 0.0
+
+    @property
+    def total(self) -> float:
+        return self.income - self.expenditure
+
+    def add(self, other: "CategoryTotals"):
+        self.income += other.income
+        self.expenditure += other.expenditure
+
+
+class BalanceWindowBackend:
+    def __init__(self):
+        self.db = DatabaseInteractions()
+
+    def get_category_tree_with_totals(self) -> list:
+        """
+        Return root Category objects with a `totals` attribute (CategoryTotals)
+        attached to every node, rolling up all descendant transactions.
+        """
+        categories = self.db.get_categories()
+        transactions = self.db.get_transactions_with_category_ids()
+
+        roots = Category.build_tree(categories)
+        category_map = {c.id: c for c in categories}
+
+        for c in categories:
+            c.totals = CategoryTotals()
+
+        for t in transactions:
+            if t.category_id and t.category_id in category_map:
+                cat = category_map[t.category_id]
+                try:
+                    amount = float(t.amount)
+                except (TypeError, ValueError):
+                    amount = 0.0
+                if t.cdt_dbt == "CRDT":
+                    cat.totals.income += amount
+                else:
+                    cat.totals.expenditure += amount
+
+        for root in roots:
+            self._roll_up(root)
+
+        return roots
+
+    def get_transactions_for_category(self, category_id: int) -> list:
+        """Return only the direct transactions belonging to this category."""
+        return self.db.get_transactions_by_category(category_id)
+
+    # ── Private helpers ────────────────────────────────────────────────────
+
+    def _roll_up(self, node) -> CategoryTotals:
+        """Recursively add children's totals into the parent and return the result."""
+        for child in node.children:
+            child_totals = self._roll_up(child)
+            node.totals.add(child_totals)
+        return node.totals
