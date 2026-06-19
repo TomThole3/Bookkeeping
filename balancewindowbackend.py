@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from database import DatabaseInteractions
 from category import Category
 
@@ -55,6 +56,15 @@ class BalanceWindowBackend:
     def get_transactions_for_category(self, category_id: int) -> list:
         """Return only the direct transactions belonging to this category."""
         return self.db.get_transactions_by_category(category_id)
+
+    # ── Mutations ──────────────────────────────────────────────────────────
+
+    def remove_category(self, transaction) -> None:
+        if transaction.is_split:
+            prefix = re.sub(r"-\d+$", "", transaction.reference or "")
+            self.db.remove_split_parts(prefix)
+        else:
+            self.db.remove_category_by_reference(transaction.reference)
 
     # ── Private helpers ────────────────────────────────────────────────────
 

@@ -61,6 +61,7 @@ class MainWindow(QWidget):
     # NAVIGATION METHODS
     # ---------------------------
     def processing(self):
+        self.processing_window.load_transactions()
         self.stack.setCurrentIndex(1)
 
     def journal(self):

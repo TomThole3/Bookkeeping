@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
+from removecategorydialog import RemoveCategoryDialog
 
 
 class BalanceWindow(QWidget):
@@ -19,12 +20,10 @@ class BalanceWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        # ── Return button ──────────────────────────────────────────────────
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
         layout.addWidget(self.btn_return)
 
-        # ── Tree ───────────────────────────────────────────────────────────
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
         self.tree.setHeaderLabels(["Category", "Income", "Expenditure", "Total"])
@@ -37,7 +36,6 @@ class BalanceWindow(QWidget):
 
         layout.addWidget(self.tree)
 
-        # ── Expand / collapse controls ─────────────────────────────────────
         btn_row = QHBoxLayout()
         btn_expand = QPushButton("Expand all")
         btn_expand.clicked.connect(self.tree.expandAll)
@@ -72,7 +70,6 @@ class BalanceWindow(QWidget):
             self._fmt(totals.expenditure),
             self._fmt(totals.total),
         ])
-        # Store the integer category id for use in the double-click handler
         item.setData(0, Qt.ItemDataRole.UserRole, category.id)
 
         for col in (1, 2, 3):
@@ -94,13 +91,12 @@ class BalanceWindow(QWidget):
         category_name = item.text(0)
         transactions = self.backend.get_transactions_for_category(category_id)
 
-        # Find or create the drill-down screen in the stack
         drill_down = self.stack.findChild(CategoryTransactionsWindow)
         if drill_down is None:
-            drill_down = CategoryTransactionsWindow(self.stack)
+            drill_down = CategoryTransactionsWindow(self.stack, self.backend)
             self.stack.addWidget(drill_down)
 
-        drill_down.load(category_name, transactions)
+        drill_down.load(category_name, category_id, transactions)
         self.stack.setCurrentWidget(drill_down)
 
     # ── Navigation ─────────────────────────────────────────────────────────
@@ -110,13 +106,14 @@ class BalanceWindow(QWidget):
 
 
 class CategoryTransactionsWindow(QWidget):
-    def __init__(self, stack):
+    def __init__(self, stack, backend: BalanceWindowBackend):
         super().__init__()
         self.stack = stack
+        self.backend = backend
+        self._current_category_id = None
 
         layout = QVBoxLayout()
 
-        # ── Header row: back button + category label ───────────────────────
         header_row = QHBoxLayout()
         self.btn_back = QPushButton("← Back to balance")
         self.btn_back.clicked.connect(self._go_back)
@@ -132,7 +129,6 @@ class CategoryTransactionsWindow(QWidget):
 
         layout.addLayout(header_row)
 
-        # ── Table ──────────────────────────────────────────────────────────
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels([
@@ -141,14 +137,19 @@ class CategoryTransactionsWindow(QWidget):
         ])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
+        self.table.cellDoubleClicked.connect(self._on_row_double_clicked)
         layout.addWidget(self.table)
 
         self.setLayout(layout)
 
-    def load(self, category_name: str, transactions: list):
+    def load(self, category_name: str, category_id: int, transactions: list):
         self.setWindowTitle(f"Muntenman — {category_name}")
         self.label_category.setText(category_name)
+        self._current_category_id = category_id
 
+        self._render_table(transactions)
+
+    def _render_table(self, transactions: list):
         self.table.setRowCount(len(transactions))
         for row, t in enumerate(transactions):
             self.table.setItem(row, 0, QTableWidgetItem(t.reference or ""))
@@ -157,11 +158,28 @@ class CategoryTransactionsWindow(QWidget):
             self.table.setItem(row, 3, QTableWidgetItem(t.date or ""))
             self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
+            # Store Transaction object for retrieval on double-click
+            self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, t)
 
         for col in range(6):
             self.table.resizeColumnToContents(col)
 
+    # ── Double-click ───────────────────────────────────────────────────────
+
+    def _on_row_double_clicked(self, row: int, _column: int):
+        t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        dialog = RemoveCategoryDialog(t, parent=self)
+        if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
+            self.backend.remove_category(t)
+            # Reload only this category's transactions
+            transactions = self.backend.get_transactions_for_category(
+                self._current_category_id
+            )
+            self._render_table(transactions)
+
+    # ── Navigation ─────────────────────────────────────────────────────────
+
     def _go_back(self):
-        self.stack.setCurrentWidget(
-            self.stack.findChild(BalanceWindow)
-        )
+        balance_window = self.stack.findChild(BalanceWindow)
+        balance_window.load_categories()  # refresh totals after any removals
+        self.stack.setCurrentWidget(balance_window)

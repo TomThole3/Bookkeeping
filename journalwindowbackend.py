@@ -1,19 +1,41 @@
 # -*- coding: utf-8 -*-
+import re
 from database import DatabaseInteractions
+
 
 class JournalWindowBackend:
     def __init__(self):
         self.db = DatabaseInteractions()
         self._transactions = []
 
+    # ── Data loading ───────────────────────────────────────────────────────
+
     def load_transactions(self):
+        """Fetch all transactions from the database, cache them sorted latest first."""
         self._transactions = self.db.get_categorized_transactions()
-        self._transactions.sort(key=lambda t: t.date, reverse=True)
+        self._transactions.sort(key=lambda t: t.date or "", reverse=True)
+
+    # ── Queries ────────────────────────────────────────────────────────────
 
     def get_categories(self) -> list[str]:
+        """Return a sorted list of unique category IDs present in the loaded transactions."""
         return sorted({t.category_id for t in self._transactions if t.category_id})
 
     def get_filtered_transactions(self, filters: dict) -> list:
+        """
+        Return transactions matching all active filters.
+
+        Expected filter keys (all optional / nullable):
+            reference    (str)  – case-insensitive substring match
+            cdt_dbt      (str)  – exact match; "All" means no filter
+            category     (str)  – exact match; "All" means no filter
+            counterparty (str)  – case-insensitive substring match
+            description  (str)  – case-insensitive substring match
+            amount_min   (float)
+            amount_max   (float)
+            date_from    (str)  – "YYYY-MM-DD"
+            date_to      (str)  – "YYYY-MM-DD"
+        """
         reference    = (filters.get("reference") or "").lower()
         cdt_dbt      = filters.get("cdt_dbt", "All")
         category     = filters.get("category", "All")
@@ -44,18 +66,29 @@ class JournalWindowBackend:
 
         return result
 
+    # ── Mutations ──────────────────────────────────────────────────────────
+
+    def remove_category(self, transaction) -> None:
+        if transaction.is_split:
+            prefix = re.sub(r"-\d+$", "", transaction.reference or "")
+            self.db.remove_split_parts(prefix)
+        else:
+            self.db.remove_category_by_reference(transaction.reference)
+
+    # ── Private helpers ────────────────────────────────────────────────────
+
     @staticmethod
     def _amount_in_range(raw_amount, minimum: float, maximum: float) -> bool:
         try:
             return minimum <= float(raw_amount) <= maximum
         except (TypeError, ValueError):
-            return True  # Don't exclude transactions with unparseable amounts
+            return True
 
     @staticmethod
     def _date_in_range(raw_date: str, date_from: str, date_to: str) -> bool:
         if not raw_date:
-            return True  # Don't exclude transactions with missing dates
+            return True
         try:
-            return date_from <= raw_date <= date_to  # ISO strings compare correctly
+            return date_from <= raw_date <= date_to
         except TypeError:
             return True

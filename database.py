@@ -143,7 +143,7 @@ class DatabaseInteractions:
             """
             SELECT t.reference, t.amount, t.cdt_dbt, t.date,
                    t.description, t.counterparty_name,
-                   t.counterparty_iban, c.name
+                   t.counterparty_iban, c.name, t.is_split
             FROM transactions t
             LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.category_id IS NOT NULL
@@ -153,22 +153,22 @@ class DatabaseInteractions:
         return [Transaction(*row) for row in cursor.fetchall()]
     
     def get_transactions_by_category(self, category_id):
-       cursor = self.conn.execute(
-           """
-           SELECT reference, amount, cdt_dbt, date, description,
-                  counterparty_name, counterparty_iban, category_id
-           FROM transactions
-           WHERE category_id = ?
-           """,
-           (category_id,),
-       )
-       return [Transaction(*row) for row in cursor.fetchall()]
+        cursor = self.conn.execute(
+            """
+            SELECT reference, amount, cdt_dbt, date, description,
+                   counterparty_name, counterparty_iban, category_id, is_split
+            FROM transactions
+            WHERE category_id = ?
+            """,
+            (category_id,),
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
     
     def get_transactions_with_category_ids(self):
         cursor = self.conn.execute(
             """
             SELECT reference, amount, cdt_dbt, date, description,
-                   counterparty_name, counterparty_iban, category_id
+                   counterparty_name, counterparty_iban, category_id, is_split
             FROM transactions
             WHERE category_id IS NOT NULL
             """
@@ -185,6 +185,31 @@ class DatabaseInteractions:
             (reference,),
             )
         return cursor.fetchone()
+    
+    def remove_category_by_reference(self, reference: str):
+        self.conn.execute(
+            "UPDATE transactions SET category_id = NULL WHERE reference = ?",
+            (reference,)
+        )
+        self.conn.commit()
+    
+    def remove_category_by_reference_prefix(self, prefix: str):
+        self.conn.execute(
+            "UPDATE transactions SET category_id = NULL WHERE reference LIKE ?",
+            (f"{prefix}-%",)
+        )
+        self.conn.commit()
+        
+    def remove_split_parts(self, prefix: str):
+        self.conn.execute(
+            "DELETE FROM transactions WHERE reference LIKE ?",
+            (f"{prefix}-%",)
+        )
+        self.conn.execute(
+            "UPDATE transactions SET is_split = 0 WHERE reference = ?",
+            (prefix,)
+        )
+        self.conn.commit()
 
     # ------------------------------------------------------------------
     # Category methods

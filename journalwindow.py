@@ -4,8 +4,9 @@ from PyQt6.QtWidgets import (
     QTableWidget, QTableWidgetItem, QPushButton,
     QLineEdit, QComboBox, QDoubleSpinBox, QDateEdit, QLabel,
 )
-from PyQt6.QtCore import QDate
+from PyQt6.QtCore import QDate, Qt
 from journalwindowbackend import JournalWindowBackend
+from removecategorydialog import RemoveCategoryDialog
 
 
 class JournalWindow(QWidget):
@@ -30,7 +31,6 @@ class JournalWindow(QWidget):
         filter_grid.setHorizontalSpacing(12)
         filter_grid.setVerticalSpacing(6)
 
-        # Row 0: Reference | CrdtDbt | Category
         filter_grid.addWidget(QLabel("Reference:"), 0, 0)
         self.filter_reference = QLineEdit()
         self.filter_reference.setPlaceholderText("Search…")
@@ -49,7 +49,6 @@ class JournalWindow(QWidget):
         self.filter_category.currentIndexChanged.connect(self._apply_filters)
         filter_grid.addWidget(self.filter_category, 0, 5)
 
-        # Row 1: Counterparty | Description
         filter_grid.addWidget(QLabel("Counterparty:"), 1, 0)
         self.filter_counterparty = QLineEdit()
         self.filter_counterparty.setPlaceholderText("Search…")
@@ -62,7 +61,6 @@ class JournalWindow(QWidget):
         self.filter_description.textChanged.connect(self._apply_filters)
         filter_grid.addWidget(self.filter_description, 1, 3, 1, 3)
 
-        # Row 2: Amount range | Date from
         filter_grid.addWidget(QLabel("Amount min:"), 2, 0)
         self.filter_amount_min = QDoubleSpinBox()
         self.filter_amount_min.setRange(0, 999_999_999)
@@ -86,7 +84,6 @@ class JournalWindow(QWidget):
         self.filter_date_from.dateChanged.connect(self._apply_filters)
         filter_grid.addWidget(self.filter_date_from, 2, 5)
 
-        # Row 3: Clear button | Date to
         self.btn_clear = QPushButton("Clear Filters")
         self.btn_clear.clicked.connect(self._clear_filters)
         filter_grid.addWidget(self.btn_clear, 3, 0, 1, 2)
@@ -109,6 +106,7 @@ class JournalWindow(QWidget):
             "Counterparty", "Description", "Category",
         ])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.cellDoubleClicked.connect(self._on_row_double_clicked)
         layout.addWidget(self.table)
 
         self.setLayout(layout)
@@ -131,15 +129,15 @@ class JournalWindow(QWidget):
 
     def _build_filters(self) -> dict:
         return {
-            "reference":   self.filter_reference.text(),
-            "cdt_dbt":     self.filter_cdt_dbt.currentText(),
-            "category":    self.filter_category.currentText(),
+            "reference":    self.filter_reference.text(),
+            "cdt_dbt":      self.filter_cdt_dbt.currentText(),
+            "category":     self.filter_category.currentText(),
             "counterparty": self.filter_counterparty.text(),
-            "description": self.filter_description.text(),
-            "amount_min":  self.filter_amount_min.value(),
-            "amount_max":  self.filter_amount_max.value(),
-            "date_from":   self.filter_date_from.date().toString("yyyy-MM-dd"),
-            "date_to":     self.filter_date_to.date().toString("yyyy-MM-dd"),
+            "description":  self.filter_description.text(),
+            "amount_min":   self.filter_amount_min.value(),
+            "amount_max":   self.filter_amount_max.value(),
+            "date_from":    self.filter_date_from.date().toString("yyyy-MM-dd"),
+            "date_to":      self.filter_date_to.date().toString("yyyy-MM-dd"),
         }
 
     def _apply_filters(self):
@@ -156,6 +154,17 @@ class JournalWindow(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
             self.table.setItem(row, 6, QTableWidgetItem(t.category_id or ""))
+            # Store the Transaction object on column 0 for retrieval on double-click
+            self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, t)
+
+    # ── Double-click ───────────────────────────────────────────────────────
+
+    def _on_row_double_clicked(self, row: int, _column: int):
+        t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        dialog = RemoveCategoryDialog(t, parent=self)
+        if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
+            self.backend.remove_category(t)
+            self.load_transactions()
 
     # ── Clear filters ──────────────────────────────────────────────────────
 
