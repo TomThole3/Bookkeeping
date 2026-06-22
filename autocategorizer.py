@@ -48,7 +48,6 @@ class AutoCategorizer:
         ]
 
         examples_block = self._build_examples_block()
-        print(examples_block)
         
         prompt = f"""You are a bookkeeping assistant. Categorize each transaction into EXACTLY one of these categories:
         {json.dumps(category_names)}
@@ -71,7 +70,6 @@ class AutoCategorizer:
         )
 
         raw = response["message"]["content"].strip()
-        print(raw)
         return self._parse_response(raw)
 
     def _parse_response(self, raw: str) -> dict:
