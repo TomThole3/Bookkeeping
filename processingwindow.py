@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QPushButton, QMessageBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QComboBox, QHeaderView, QFileDialog, QDoubleSpinBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QMessageBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QProgressDialog, QComboBox, QHeaderView, QFileDialog, QDoubleSpinBox
 from processingwindowbackend import ProcessingWindowBackend
 from categorydialog import AddCategoryDialog
+from autocategorizer import AutoCategorizer
 
 
 class ProcessingWindow(QWidget):
@@ -11,6 +12,7 @@ class ProcessingWindow(QWidget):
 
         self.stack = stack
         self.backend = ProcessingWindowBackend(self)
+        self._ai_suggestions = {}  # {reference: category_id}
 
         self.setWindowTitle("Muntenman Schuifwerk")
         self.setGeometry(100, 100, 300, 200)
@@ -37,6 +39,10 @@ class ProcessingWindow(QWidget):
         self.btn_save_categories = QPushButton("Save categories")
         self.btn_save_categories.clicked.connect(self._save_categories)
         layout.addWidget(self.btn_save_categories)
+        
+        self.btn_auto_categorize = QPushButton("Auto-categorize (AI)")
+        self.btn_auto_categorize.clicked.connect(self._auto_categorize)
+        layout.addWidget(self.btn_auto_categorize)
 
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
@@ -63,7 +69,6 @@ class ProcessingWindow(QWidget):
      
         msg.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg.exec()
-        
 
     # --- private: table management ---
 
@@ -200,8 +205,87 @@ class ProcessingWindow(QWidget):
                 "category_id": category_id,
             })
     
+        for row_data in table_rows:
+           reference = row_data["reference"]
+           actual_category_id = row_data["category_id"]
+           ai_suggested_id = self._ai_suggestions.get(reference)
+    
+           # Save as example if:
+           # - AI made a suggestion but user changed it (correction)
+           # - AI made no suggestion but user categorized it anyway (new example)
+           is_split = self._is_split_reference(reference)
+           if not is_split and ai_suggested_id != actual_category_id and actual_category_id != '':
+               self.backend.save_categorization_example(
+                   counterparty=row_data["counterparty"],
+                   description=row_data["description"],
+                   amount=row_data["amount"],
+                   cdt_dbt=row_data["cdt_dbt"],
+                   category_id=actual_category_id,
+               )
+    
         self.backend.save_categories(table_rows)
+        self._ai_suggestions = {}  # reset after save
         self.load_transactions()
+        
+        # a i 
+        
+    def _auto_categorize(self):
+        transactions = self.backend.get_uncategorized_transactions()
+        categories = self.backend.get_categories()
+    
+        if not transactions:
+            QMessageBox.information(self, "Nothing to do", "No uncategorized transactions.")
+            return
+    
+        progress = QProgressDialog("Asking Phi-4 Mini...", None, 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.show()
+    
+        try:
+            assignments = self.backend.get_ai_suggestions(transactions, categories)
+        except Exception as e:
+            QMessageBox.critical(self, "AI Error", f"Categorization failed:\n{e}")
+            return
+        finally:
+            progress.close()
+    
+        self._apply_suggestions(assignments)
+        QMessageBox.information(
+            self, "Done",
+            f"AI suggested categories for {len(assignments)} transaction(s). Review and save."
+        )
+        
+    def _apply_suggestions(self, assignments: dict):
+        self._ai_suggestions = assignments
+        for row in range(self.table.rowCount()):
+            ref_item = self.table.item(row, 0)
+            if not ref_item or not ref_item.text():
+                continue
+            reference = ref_item.text()
+            if reference not in assignments:
+                continue
+            combo = self.table.cellWidget(row, 6)
+            if combo is None:
+                continue
+            category_id = assignments[reference]
+            for i in range(combo.count()):
+                if combo.itemData(i) == category_id:
+                    combo.setCurrentIndex(i)
+                    break
+    
+    def _check_ai_available(self):
+        categories = self.backend.get_categories()
+        available = AutoCategorizer(categories).is_ollama_available()
+        self.btn_auto_categorize.setEnabled(available)
+        if not available:
+            self.btn_auto_categorize.setToolTip("Ollama is not running or phi4-mini is not installed.")
+            
+    def _is_split_reference(self, reference: str) -> bool:
+        count = sum(
+            1 for row in range(self.table.rowCount())
+            if self.table.item(row, 0) and self.table.item(row, 0).text() == reference
+        )
+        return count > 1
 
     def _main_screen(self):
         self.stack.setCurrentIndex(0)

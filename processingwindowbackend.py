@@ -4,6 +4,8 @@ from database import DatabaseInteractions
 from transaction import Transaction
 from collections import defaultdict
 from decimal import Decimal
+from autocategorizer import AutoCategorizer
+
 
 class ProcessingWindowBackend:
 
@@ -64,12 +66,22 @@ class ProcessingWindowBackend:
             groups[t.reference].append(t)
     
         return list(groups.values())
-
     
     def validate(self, sublist, amount):
         total = sum(t.amount for t in sublist)
         return float(Decimal(str(total)) - Decimal(str(amount)))
     
+    def get_ai_suggestions(self, transactions: list, categories: list) -> dict:
+        examples = self.get_categorization_examples()
+        categorizer = AutoCategorizer(categories, examples=examples)
+        return categorizer.categorize(transactions)
+    
+    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
+        self.db.save_categorization_example(counterparty, description, amount, cdt_dbt, category_id)
+    
+    def get_categorization_examples(self) -> list:
+        return self.db.get_categorization_examples()
+        
                     
     
         

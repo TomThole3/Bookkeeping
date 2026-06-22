@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QVBoxLayout, QL
 from processingwindow import ProcessingWindow
 from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
+from analysiswindow import AnalysisWindow
 
 
 class MainWindow(QWidget):
@@ -33,6 +34,10 @@ class MainWindow(QWidget):
         self.btn_settings = QPushButton("Balance")
         self.btn_settings.clicked.connect(self.balance)
         main_layout.addWidget(self.btn_settings)
+        
+        self.btn_settings = QPushButton("Analysis")
+        self.btn_settings.clicked.connect(self.analysis)
+        main_layout.addWidget(self.btn_settings)
 
         main_menu.setLayout(main_layout)
 
@@ -42,12 +47,14 @@ class MainWindow(QWidget):
         self.processing_window = ProcessingWindow(self.stack)
         self.journal_window = JournalWindow(self.stack)
         self.balance_window = BalanceWindow(self.stack)
+        self.analysis_window = AnalysisWindow(self.stack)
 
         # Add all screens to stack
         self.stack.addWidget(main_menu)               # index 0
         self.stack.addWidget(self.processing_window)  # index 1
         self.stack.addWidget(self.journal_window)     # index 2
         self.stack.addWidget(self.balance_window)     # index 3
+        self.stack.addWidget(self.analysis_window)    
 
         # Set initial screen
         self.stack.setCurrentIndex(0)
@@ -71,6 +78,9 @@ class MainWindow(QWidget):
     def balance(self):
         self.balance_window.load_categories()
         self.stack.setCurrentIndex(3)
+        
+    def analysis(self):
+        self.stack.setCurrentIndex(4)
 
 
 if __name__ == "__main__":

@@ -44,7 +44,20 @@ class DatabaseInteractions:
                 is_split INTEGER DEFAULT 0
             )
             """
-        )
+            )
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS categorization_examples (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            counterparty TEXT,
+            description TEXT,
+            amount REAL,
+            cdt_dbt TEXT,
+            category_id INTEGER
+            )
+            """
+            )
+        
         self.conn.commit()
 
     def _remove_category_recursive(self, category_id):
@@ -210,6 +223,17 @@ class DatabaseInteractions:
             (prefix,)
         )
         self.conn.commit()
+        
+    def get_all_transactions(self):
+        cursor = self.conn.execute(
+            """
+            SELECT reference, amount, cdt_dbt, date, description,
+                   counterparty_name, counterparty_iban, category_id, is_split
+            FROM transactions
+            WHERE is_split = 0 AND category_id IS NOT NULL AND counterparty_iban != "NL89ASNB0944870546"
+            """
+        )
+        return [Transaction(*row) for row in cursor.fetchall()]
 
     # ------------------------------------------------------------------
     # Category methods
@@ -246,6 +270,24 @@ class DatabaseInteractions:
     # ------------------------------------------------------------------
     # Cleanup
     # ------------------------------------------------------------------
+    
+    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
+        self.conn.execute("""
+            INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
+            VALUES (?, ?, ?, ?, ?)
+        """, (counterparty, description, amount, cdt_dbt, category_id))
+        self.conn.commit()
+    
+    def get_categorization_examples(self, limit=20) -> list:
+        cursor = self.conn.execute("""
+            SELECT counterparty, description, amount, cdt_dbt, category_id
+            FROM categorization_examples
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,))
+        return cursor.fetchall()
+    
+    # -----------------------------------------------------
 
     def close(self):
         self.conn.close()
