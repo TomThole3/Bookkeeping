@@ -27,6 +27,7 @@ class ProcessingWindow(QWidget):
         self.table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         layout.addWidget(self.table)
+        self._setup_column_widths()
 
         self.btn_add_entries = QPushButton("Add new entries")
         self.btn_add_entries.clicked.connect(self._add_entries)
@@ -134,6 +135,19 @@ class ProcessingWindow(QWidget):
             combo.addItem(cat.name, cat.id)
         combo.blockSignals(False)
         return combo
+    
+    def _setup_column_widths(self):
+        header = self.table.horizontalHeader()
+        # Fixed columns
+        self.table.setColumnWidth(0, 130)  # reference
+        self.table.setColumnWidth(1, 50)   # cdt_dbt
+        self.table.setColumnWidth(2, 110)  # amount spinbox
+        self.table.setColumnWidth(3, 100)  # date
+        self.table.setColumnWidth(4, 200)  # counterparty
+        self.table.setColumnWidth(6, 180)  # category combobox
+        self.table.setColumnWidth(7, 100)   # split button
+        # Description (col 5) stretches to fill remaining space
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
 
     # --- private: split state management ---
 
