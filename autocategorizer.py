@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
-
 import json
 import ollama
+
 
 class AutoCategorizer:
     MODEL = "phi4-mini"
     BATCH_SIZE = 20
 
-    def __init__(self, categories: list, examples: list = None):
+    def __init__(self, categories: list, examples: list = None, use_examples: bool = True):
         self.categories = categories
         self._category_map = {cat.name: cat.id for cat in categories}
-        self._id_to_name = {cat.id: cat.name for cat in categories}  # needed to render examples
+        self._id_to_name = {cat.id: cat.name for cat in categories}
         self.examples = examples or []
-    
+        self.use_examples = use_examples
+
     def _build_examples_block(self) -> str:
-        if not self.examples:
+        if not self.use_examples or not self.examples:
             return ""
         lines = ["PAST EXAMPLES (use these to guide your decisions):"]
         for ex in self.examples:
@@ -46,9 +47,8 @@ class AutoCategorizer:
             }
             for t in transactions
         ]
-
         examples_block = self._build_examples_block()
-        
+
         prompt = f"""You are a bookkeeping assistant. Categorize each transaction into EXACTLY one of these categories:
         {json.dumps(category_names)}
         
@@ -68,7 +68,6 @@ class AutoCategorizer:
             model=self.MODEL,
             messages=[{"role": "user", "content": prompt}],
         )
-
         raw = response["message"]["content"].strip()
         return self._parse_response(raw)
 
@@ -78,12 +77,10 @@ class AutoCategorizer:
             if raw.startswith("json"):
                 raw = raw[4:]
         raw = raw.strip()
-
         try:
             assignments = json.loads(raw)
         except json.JSONDecodeError:
             return {}
-
         return {
             ref: self._category_map[name]
             for ref, name in assignments.items()

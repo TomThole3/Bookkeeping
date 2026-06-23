@@ -5,6 +5,7 @@ from transaction import Transaction
 from collections import defaultdict
 from decimal import Decimal
 from autocategorizer import AutoCategorizer
+from settingswindow import load_settings
 
 
 class ProcessingWindowBackend:
@@ -13,6 +14,7 @@ class ProcessingWindowBackend:
         self.parser = CAMTParser()
         self.db = DatabaseInteractions()
         self.processingwindow = processingwindow
+        self.settings = load_settings()
 
     def import_transactions_from_file(self, path):
         transactions = self.parser.extract_camt_transactions(path)
@@ -73,7 +75,7 @@ class ProcessingWindowBackend:
     
     def get_ai_suggestions(self, transactions: list, categories: list) -> dict:
         examples = self.get_categorization_examples()
-        categorizer = AutoCategorizer(categories, examples=examples)
+        categorizer = AutoCategorizer(categories, examples=examples, use_examples=self.settings.get("use_examples", True))
         return categorizer.categorize(transactions)
     
     def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):

@@ -1,15 +1,17 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QStackedWidget)
+from PyQt6.QtWidgets import (
+    QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QStackedWidget
+)
 from processingwindow import ProcessingWindow
 from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
 from analysiswindow import AnalysisWindow
+from settingswindow import SettingsWindow, load_settings, apply_theme
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle("Muntenman Centraal")
         self.setGeometry(0, 0, 1800, 1000)
 
@@ -17,6 +19,7 @@ class MainWindow(QWidget):
         # STACKED WIDGET (navigation)
         # ---------------------------
         self.stack = QStackedWidget()
+
         main_menu = QWidget()
         main_layout = QVBoxLayout()
 
@@ -31,12 +34,16 @@ class MainWindow(QWidget):
         self.btn_view_reports.clicked.connect(self.journal)
         main_layout.addWidget(self.btn_view_reports)
 
-        self.btn_settings = QPushButton("Balance")
-        self.btn_settings.clicked.connect(self.balance)
-        main_layout.addWidget(self.btn_settings)
-        
-        self.btn_settings = QPushButton("Analysis")
-        self.btn_settings.clicked.connect(self.analysis)
+        self.btn_balance = QPushButton("Balance")
+        self.btn_balance.clicked.connect(self.balance)
+        main_layout.addWidget(self.btn_balance)
+
+        self.btn_analysis = QPushButton("Analysis")
+        self.btn_analysis.clicked.connect(self.analysis)
+        main_layout.addWidget(self.btn_analysis)
+
+        self.btn_settings = QPushButton("Settings")
+        self.btn_settings.clicked.connect(self.settings)
         main_layout.addWidget(self.btn_settings)
 
         main_menu.setLayout(main_layout)
@@ -48,13 +55,15 @@ class MainWindow(QWidget):
         self.journal_window = JournalWindow(self.stack)
         self.balance_window = BalanceWindow(self.stack)
         self.analysis_window = AnalysisWindow(self.stack)
+        self.settings_window = SettingsWindow(self.stack)
 
         # Add all screens to stack
         self.stack.addWidget(main_menu)               # index 0
         self.stack.addWidget(self.processing_window)  # index 1
         self.stack.addWidget(self.journal_window)     # index 2
         self.stack.addWidget(self.balance_window)     # index 3
-        self.stack.addWidget(self.analysis_window)    
+        self.stack.addWidget(self.analysis_window)    # index 4
+        self.stack.addWidget(self.settings_window)    # index 5
 
         # Set initial screen
         self.stack.setCurrentIndex(0)
@@ -78,13 +87,21 @@ class MainWindow(QWidget):
     def balance(self):
         self.balance_window.load_categories()
         self.stack.setCurrentIndex(3)
-        
+
     def analysis(self):
         self.stack.setCurrentIndex(4)
+
+    def settings(self):
+        self.stack.setCurrentIndex(5)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Restore the saved theme before showing any window
+    saved = load_settings()
+    apply_theme(saved.get("theme", "dark_teal.xml"))
+
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
