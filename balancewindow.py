@@ -20,10 +20,6 @@ class BalanceWindow(QWidget):
 
         layout = QVBoxLayout()
 
-        self.btn_return = QPushButton("Return to mainscreen")
-        self.btn_return.clicked.connect(self._main_screen)
-        layout.addWidget(self.btn_return)
-
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
         self.tree.setHeaderLabels(["Category", "Income", "Expenditure", "Total"])
@@ -45,6 +41,10 @@ class BalanceWindow(QWidget):
         btn_row.addWidget(btn_collapse)
         btn_row.addStretch()
         layout.addLayout(btn_row)
+        
+        self.btn_return = QPushButton("Return to mainscreen")
+        self.btn_return.clicked.connect(self._main_screen)
+        layout.addWidget(self.btn_return)
 
         self.setLayout(layout)
 
