@@ -1,7 +1,5 @@
 import sys
-from PyQt6.QtWidgets import (
-    QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QStackedWidget
-)
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QStackedWidget
 from processingwindow import ProcessingWindow
 from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
@@ -22,9 +20,8 @@ class MainWindow(QWidget):
 
         main_menu = QWidget()
         main_layout = QVBoxLayout()
-
-        self.label = QLabel("Choose an action:")
-        main_layout.addWidget(self.label)
+        
+        main_layout.addStretch()
 
         self.btn_add_transaction = QPushButton("Process transactions")
         self.btn_add_transaction.clicked.connect(self.processing)
