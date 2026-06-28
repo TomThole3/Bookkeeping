@@ -267,6 +267,56 @@ class DatabaseInteractions:
         self._remove_category_recursive(category_id)
         self.conn.commit()
 
+
+
+    # ----------------- Memorial transactions --------------------------
+    
+    def get_next_memorial_index(self, date_str: str) -> int:
+        prefix = f"MEM-{date_str.replace('-', '')}-"
+        cursor = self.conn.execute(
+            """
+            SELECT reference FROM transactions
+            WHERE reference LIKE ?
+            """,
+            (f"{prefix}%",)
+        )
+        existing = cursor.fetchall()
+        if not existing:
+            return 1
+        indices = []
+        for (ref,) in existing:
+            # references look like MEM-20260628-003-D / -C
+            part = ref[len(prefix):]        # e.g. "003-D"
+            index_part = part.split("-")[0] # e.g. "003"
+            try:
+                indices.append(int(index_part))
+            except ValueError:
+                pass
+        return max(indices, default=0) + 1
+
+    def save_memoriaal_transaction(self, date, description, amount, from_category_id, to_category_id):
+        index = self.get_next_memoriaal_index(date)
+        base_ref = f"MEM-{date.replace('-', '')}-{index:03d}"
+    
+        debit_ref  = f"{base_ref}-D"
+        credit_ref = f"{base_ref}-C"
+    
+        for ref, cdt_dbt, category_id in [
+            (debit_ref,  "DBIT", from_category_id),
+            (credit_ref, "CRDT", to_category_id),
+        ]:
+            self.conn.execute(
+                """
+                INSERT OR IGNORE INTO transactions
+                    (reference, amount, cdt_dbt, date, description,
+                     counterparty_name, counterparty_iban, category_id, is_split)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (ref, amount, cdt_dbt, date, description, "Memorial", None, category_id, 0),
+            )
+        self.conn.commit()
+        return base_ref
+    
     # ------------------------------------------------------------------
     # Cleanup
     # ------------------------------------------------------------------

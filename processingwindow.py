@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QPushButton, QMessageBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QProgressDialog, QComboBox, QHeaderView, QFileDialog, QDoubleSpinBox
+from PyQt6.QtWidgets import QWidget, QPushButton, QMessageBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QProgressDialog, QComboBox, QHeaderView, QDialog, QFileDialog, QDoubleSpinBox
 from processingwindowbackend import ProcessingWindowBackend
 from categorydialog import AddCategoryDialog
 from autocategorizer import AutoCategorizer
-
+from memorialdialog import MemorialDialog
 
 class ProcessingWindow(QWidget):
     def __init__(self, stack):
@@ -44,7 +44,11 @@ class ProcessingWindow(QWidget):
         self.btn_auto_categorize = QPushButton("Auto-categorize (AI)")
         self.btn_auto_categorize.clicked.connect(self._auto_categorize)
         layout.addWidget(self.btn_auto_categorize)
-
+        
+        self.btn_memoriaal = QPushButton("Nieuwe memoriaalpost")
+        self.btn_memoriaal.clicked.connect(self._add_memoriaal)
+        layout.addWidget(self.btn_memoriaal)
+        
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
         layout.addWidget(self.btn_return)
@@ -125,6 +129,10 @@ class ProcessingWindow(QWidget):
         spin.setMaximum(99999999.99)
         spin.setDecimals(2)
         spin.setValue(amount)
+        if split_index == 0:
+            spin.setReadOnly(True)
+            spin.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
+            spin.setStyleSheet("QDoubleSpinBox { color: gray; }")
         return spin
 
     def _create_category_combobox(self, reference, split_index, categories):
@@ -152,6 +160,14 @@ class ProcessingWindow(QWidget):
     # --- private: split state management ---
 
     def _split_row(self, transaction, categories):
+        # Enable the amount spinbox on the first row for this reference
+        first_row = self._find_last_row_for_reference(transaction.reference)
+        if first_row >= 0:
+            spin = self.table.cellWidget(first_row, 2)
+            if spin:
+                spin.setReadOnly(False)
+                spin.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.UpDownArrows)
+                spin.setStyleSheet("")
         self._insert_row(transaction, categories, split_index=1)
 
     # --- private: button handlers ---
@@ -300,6 +316,23 @@ class ProcessingWindow(QWidget):
             if self.table.item(row, 0) and self.table.item(row, 0).text() == reference
         )
         return count > 1
+    
+    def _add_memoriaal(self):
+        categories = self.backend.get_categories()
+        if not categories:
+            QMessageBox.warning(self, "No categories exist")
+            return
+        dialog = MemorialDialog(categories, parent=self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            values = dialog.get_values()
+            self.backend.save_memoriaal_transaction(
+                date=values["date"],
+                description=values["description"],
+                amount=values["amount"],
+                from_category_id=values["from_category_id"],
+                to_category_id=values["to_category_id"],
+            )
+            QMessageBox.information(self, "Succes", "Memorialtransaction is saved.")
 
     def _main_screen(self):
         self.stack.setCurrentIndex(0)
