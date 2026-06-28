@@ -84,8 +84,8 @@ class ProcessingWindowBackend:
     def get_categorization_examples(self) -> list:
         return self.db.get_categorization_examples()
         
-    def save_memoriaal_transaction(self, date, description, amount, from_category_id, to_category_id):
-        return self.db.save_memoriaal_transaction(date, description, amount, from_category_id, to_category_id)
+    def save_memorial_transaction(self, date, description, amount, from_category_id, to_category_id):
+        return self.db.save_memorial_transaction(date, description, amount, from_category_id, to_category_id)
                     
     
         

@@ -163,7 +163,10 @@ class JournalWindow(QWidget):
         t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
         dialog = RemoveCategoryDialog(t, parent=self)
         if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
-            self.backend.remove_category(t)
+            if t.reference and t.reference.startswith("MEM-"):
+                self.backend.delete_memorial_pair(t)
+            else:
+                self.backend.remove_category(t)
             self.load_transactions()
 
     # ── Clear filters ──────────────────────────────────────────────────────

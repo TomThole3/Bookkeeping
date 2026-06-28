@@ -20,7 +20,7 @@ class MainWindow(QWidget):
 
         main_menu = QWidget()
         main_layout = QVBoxLayout()
-        
+            
         main_layout.addStretch()
 
         self.btn_add_transaction = QPushButton("Process transactions")

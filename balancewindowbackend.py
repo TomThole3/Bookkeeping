@@ -65,6 +65,9 @@ class BalanceWindowBackend:
             self.db.remove_split_parts(prefix)
         else:
             self.db.remove_category_by_reference(transaction.reference)
+            
+    def delete_memorial_pair(self, transaction) -> None:
+        self.db.delete_memorial_pair(transaction.reference)
 
     # ── Private helpers ────────────────────────────────────────────────────
 

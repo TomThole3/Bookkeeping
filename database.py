@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sqlite3
+import re
 
 from transaction import Transaction
 from category import Category
@@ -294,8 +295,8 @@ class DatabaseInteractions:
                 pass
         return max(indices, default=0) + 1
 
-    def save_memoriaal_transaction(self, date, description, amount, from_category_id, to_category_id):
-        index = self.get_next_memoriaal_index(date)
+    def save_memorial_transaction(self, date, description, amount, from_category_id, to_category_id):
+        index = self.get_next_memorial_index(date)
         base_ref = f"MEM-{date.replace('-', '')}-{index:03d}"
     
         debit_ref  = f"{base_ref}-D"
@@ -316,6 +317,19 @@ class DatabaseInteractions:
             )
         self.conn.commit()
         return base_ref
+    
+    def get_memorial_base_ref(self, reference: str) -> str:
+        """Strip -D / -C suffix to get the shared base reference."""
+        return re.sub(r"-[DC]$", "", reference or "")
+    
+    def delete_memorial_pair(self, reference: str):
+        """Delete both legs of a memoriaal pair by any one of their references."""
+        base_ref = self.get_memorial_base_ref(reference)
+        self.conn.execute(
+            "DELETE FROM transactions WHERE reference = ? OR reference = ?",
+            (f"{base_ref}-D", f"{base_ref}-C"),
+        )
+        self.conn.commit()
     
     # ------------------------------------------------------------------
     # Cleanup

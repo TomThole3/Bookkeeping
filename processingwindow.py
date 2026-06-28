@@ -45,9 +45,9 @@ class ProcessingWindow(QWidget):
         self.btn_auto_categorize.clicked.connect(self._auto_categorize)
         layout.addWidget(self.btn_auto_categorize)
         
-        self.btn_memoriaal = QPushButton("Nieuwe memoriaalpost")
-        self.btn_memoriaal.clicked.connect(self._add_memoriaal)
-        layout.addWidget(self.btn_memoriaal)
+        self.btn_memorial = QPushButton("New memorialtransaction")
+        self.btn_memorial.clicked.connect(self._add_memorial)
+        layout.addWidget(self.btn_memorial)
         
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
@@ -317,7 +317,7 @@ class ProcessingWindow(QWidget):
         )
         return count > 1
     
-    def _add_memoriaal(self):
+    def _add_memorial(self):
         categories = self.backend.get_categories()
         if not categories:
             QMessageBox.warning(self, "No categories exist")
@@ -325,7 +325,7 @@ class ProcessingWindow(QWidget):
         dialog = MemorialDialog(categories, parent=self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             values = dialog.get_values()
-            self.backend.save_memoriaal_transaction(
+            self.backend.save_memorial_transaction(
                 date=values["date"],
                 description=values["description"],
                 amount=values["amount"],

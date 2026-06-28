@@ -7,18 +7,18 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 
-class RemoveCategoryDialog(QDialog):
-    """
-    Confirmation dialog shown before removing a category from a transaction.
-    Displays key transaction details and warns the user if the transaction
-    is part of a split (all parts will be affected).
-    """
+def _split_prefix(reference: str) -> str:
+    return re.sub(r"-\d+$", "", reference or "")
 
+
+class RemoveCategoryDialog(QDialog):
     def __init__(self, transaction, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Remove category")
         self.setModal(True)
         self.setMinimumWidth(380)
+
+        is_mem = self._is_memorial(transaction.reference)
+        self.setWindowTitle("Delete memorial pair" if is_mem else "Remove category")
 
         layout = QVBoxLayout()
         layout.setSpacing(12)
@@ -38,11 +38,20 @@ class RemoveCategoryDialog(QDialog):
         detail_row("Amount:", f"€ {transaction.amount:,.2f}" if transaction.amount is not None else "—")
         detail_row("Date:", transaction.date or "—")
         detail_row("Counterparty:", transaction.counterparty_name or "—")
-
         layout.addWidget(details)
 
-        # ── Split warning ──────────────────────────────────────────────────
-        if transaction.is_split:
+        # ── Warning ────────────────────────────────────────────────────────
+        if is_mem:
+            base = self._memorial_base_ref(transaction.reference)
+            warning = QLabel(
+                f"⚠️  This is a memorial transaction. Both legs "
+                f"<b>{base}-D</b> and <b>{base}-C</b> will be deleted."
+            )
+            warning.setTextFormat(Qt.TextFormat.RichText)
+            warning.setWordWrap(True)
+            warning.setStyleSheet("color: #b05000;")
+            layout.addWidget(warning)
+        elif transaction.is_split:
             prefix = _split_prefix(transaction.reference)
             warning = QLabel(
                 f"⚠️  This is a split transaction. All parts matching "
@@ -54,7 +63,10 @@ class RemoveCategoryDialog(QDialog):
             layout.addWidget(warning)
 
         # ── Question ───────────────────────────────────────────────────────
-        question = QLabel("Remove the category from this transaction?")
+        question = QLabel(
+            "Delete this memorial pair?" if is_mem
+            else "Remove the category from this transaction?"
+        )
         question.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(question)
 
@@ -66,7 +78,7 @@ class RemoveCategoryDialog(QDialog):
         btn_cancel.clicked.connect(self.reject)
         btn_row.addWidget(btn_cancel)
 
-        btn_confirm = QPushButton("Remove category")
+        btn_confirm = QPushButton("Delete pair" if is_mem else "Remove category")
         btn_confirm.setDefault(True)
         btn_confirm.clicked.connect(self.accept)
         btn_row.addWidget(btn_confirm)
@@ -74,7 +86,13 @@ class RemoveCategoryDialog(QDialog):
         layout.addLayout(btn_row)
         self.setLayout(layout)
 
+    # ── Static helpers ─────────────────────────────────────────────────────
 
-def _split_prefix(reference: str) -> str:
-    """Strip the trailing -{integer} suffix to get the shared split prefix."""
-    return re.sub(r"-\d+$", "", reference or "")
+    @staticmethod
+    def _is_memorial(reference: str) -> bool:
+        return (reference or "").startswith("MEM-")
+
+    @staticmethod
+    def _memorial_base_ref(reference: str) -> str:
+        """Strip the trailing -D or -C leg suffix."""
+        return re.sub(r"-[DC]$", "", reference or "")

@@ -92,3 +92,6 @@ class JournalWindowBackend:
             return date_from <= raw_date <= date_to
         except TypeError:
             return True
+        
+    def delete_memorial_pair(self, transaction) -> None:
+        self.db.delete_memorial_pair(transaction.reference)
