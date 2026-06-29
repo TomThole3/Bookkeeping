@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from database import DatabaseInteractions
+from memorialhelper import memorial_prefix, memorial_base_ref, next_memorial_index, build_memorial_refs
 
 
 class JournalWindowBackend:
@@ -94,4 +95,5 @@ class JournalWindowBackend:
             return True
         
     def delete_memorial_pair(self, transaction) -> None:
-        self.db.delete_memorial_pair(transaction.reference)
+        base = memorial_base_ref(transaction.reference)
+        self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")

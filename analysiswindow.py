@@ -14,35 +14,31 @@ from analysiswindowbackend import AnalysisWindowBackend
 
 # Chart registry: (display name, backend method name)
 CHARTS = [
-    ("Income vs Expenditure",          "get_income_vs_expenditure"),
-    ("Category Breakdown",             "get_category_breakdown"),
-    ("Spending per Category Over Time","get_spending_per_category_over_time"),
-    ("Top Counterparties",             "get_top_counterparties"),
-    ("Running Balance",                "get_running_balance"),
+    ("Income vs Expenditure",           "get_income_vs_expenditure"),
+    ("Category Breakdown",              "get_category_breakdown"),
+    ("Spending per Category Over Time", "get_spending_per_category_over_time"),
+    ("Top Counterparties",              "get_top_counterparties"),
+    ("Running Balance",                 "get_running_balance"),
 ]
-
 
 class AnalysisWindow(QWidget):
     def __init__(self, stack):
         super().__init__()
+
         self.backend = AnalysisWindowBackend()
         self.stack = stack
 
         self.setWindowTitle("Muntenman Analyse")
         self.setGeometry(100, 100, 900, 600)
 
-        layout = QVBoxLayout()
+        # ── Main layout ─────────────────────────────────────────────
+        layout = QVBoxLayout(self)
 
-        # ── Top bar ────────────────────────────────────────────────────────
+        # ── Top bar ────────────────────────────────────────────────
         top_bar = QHBoxLayout()
 
-        self.btn_return = QPushButton("Return to mainscreen")
-        self.btn_return.clicked.connect(self._main_screen)
-        top_bar.addWidget(self.btn_return)
-
-        top_bar.addStretch()
-
         top_bar.addWidget(QLabel("From:"))
+
         self.date_from = QDateEdit()
         self.date_from.setCalendarPopup(True)
         self.date_from.setDate(QDate.currentDate().addYears(-1))
@@ -50,6 +46,7 @@ class AnalysisWindow(QWidget):
         top_bar.addWidget(self.date_from)
 
         top_bar.addWidget(QLabel("To:"))
+
         self.date_to = QDateEdit()
         self.date_to.setCalendarPopup(True)
         self.date_to.setDate(QDate.currentDate())
@@ -57,32 +54,62 @@ class AnalysisWindow(QWidget):
         top_bar.addWidget(self.date_to)
 
         top_bar.addWidget(QLabel("Chart:"))
+
         self.chart_selector = QComboBox()
+        self.chart_selector.addItem("Select a chart…")
         for display_name, _ in CHARTS:
             self.chart_selector.addItem(display_name)
-        self.chart_selector.currentIndexChanged.connect(self._redraw)
+        self.chart_selector.currentIndexChanged.connect(self._on_chart_selected)
         top_bar.addWidget(self.chart_selector)
 
+        top_bar.addStretch()
         layout.addLayout(top_bar)
 
-        # ── Canvas placeholder ─────────────────────────────────────────────
+        # ── Canvas (EXPANDS) ───────────────────────────────────────
         self.canvas = None
-        self.canvas_container = QVBoxLayout()
-        layout.addLayout(self.canvas_container)
 
-        self.setLayout(layout)
+        self.canvas_widget = QWidget()
+        self.canvas_container = QVBoxLayout(self.canvas_widget)
+        self.canvas_container.setContentsMargins(0, 0, 0, 0)
 
+        layout.addWidget(self.canvas_widget, 1)
+
+        # ── Bottom bar (full-width footer) ─────────────────────────────
+        self.footer_widget = QWidget()
+        self.footer_widget.setStyleSheet("background-color: transparent;")  # optional
+        
+        bottom_bar = QHBoxLayout(self.footer_widget)
+        bottom_bar.setContentsMargins(10, 10, 10, 10)
+        
+        bottom_bar.addStretch()
+        
+        self.home_button = QPushButton("Return Home")
+        self.home_button.setMinimumHeight(40)  # optional: makes it feel like a footer button
+        self.home_button.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        bottom_bar.addWidget(self.home_button)
+        
+        layout.addWidget(self.footer_widget)
     # ── Data loading ───────────────────────────────────────────────────────
 
     def load(self):
-        self._redraw()
+        self.chart_selector.setCurrentIndex(0)
+        self._clear_canvas()
 
     # ── Drawing ────────────────────────────────────────────────────────────
 
+    def _on_chart_selected(self, index):
+        if index == 0:
+            self._clear_canvas()
+        else:
+            self._redraw()
+
     def _redraw(self):
+        if self.chart_selector.currentIndex() == 0:
+            return
+
         date_from = self.date_from.date().toString("yyyy-MM-dd")
         date_to   = self.date_to.date().toString("yyyy-MM-dd")
-        _, method_name = CHARTS[self.chart_selector.currentIndex()]
+        _, method_name = CHARTS[self.chart_selector.currentIndex() - 1]  # offset for placeholder
 
         data = getattr(self.backend, method_name)(date_from, date_to)
 
@@ -94,13 +121,16 @@ class AnalysisWindow(QWidget):
 
         self._replace_canvas(fig)
 
-    def _replace_canvas(self, fig: Figure):
+    def _clear_canvas(self):
         if self.canvas is not None:
             self.canvas_container.removeWidget(self.canvas)
             self.canvas.deleteLater()
+            self.canvas = None
 
+    def _replace_canvas(self, fig: Figure):
+        self._clear_canvas()
         self.canvas = FigureCanvasQTAgg(fig)
-        self.canvas_container.addWidget(self.canvas)
+        self.canvas_container.insertWidget(0, self.canvas)
         self.canvas.draw()
 
     # ── Chart renderers ────────────────────────────────────────────────────

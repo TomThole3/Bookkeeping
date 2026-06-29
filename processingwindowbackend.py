@@ -6,6 +6,7 @@ from collections import defaultdict
 from decimal import Decimal
 from autocategorizer import AutoCategorizer
 from settingswindow import load_settings
+from memorialhelper import memorial_prefix, next_memorial_index, build_memorial_refs
 
 
 class ProcessingWindowBackend:
@@ -85,7 +86,16 @@ class ProcessingWindowBackend:
         return self.db.get_categorization_examples()
         
     def save_memorial_transaction(self, date, description, amount, from_category_id, to_category_id):
-        return self.db.save_memorial_transaction(date, description, amount, from_category_id, to_category_id)
+        prefix = memorial_prefix(date)
+        existing = self.db.get_references_with_prefix(prefix)
+        index = next_memorial_index(prefix, existing)
+        base_ref, debit_ref, credit_ref = build_memorial_refs(date, index)
+        self.db.save_memorial_transaction(
+            date, description, amount,
+            debit_ref, credit_ref,
+            from_category_id, to_category_id,
+        )
+        return base_ref
                     
     
         

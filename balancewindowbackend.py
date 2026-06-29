@@ -2,6 +2,7 @@
 import re
 from database import DatabaseInteractions
 from category import Category
+from memorialhelper import memorial_prefix, memorial_base_ref, next_memorial_index, build_memorial_refs
 
 class CategoryTotals:
     """Holds computed income/expenditure/net for one category (descendants included)."""
@@ -67,7 +68,8 @@ class BalanceWindowBackend:
             self.db.remove_category_by_reference(transaction.reference)
             
     def delete_memorial_pair(self, transaction) -> None:
-        self.db.delete_memorial_pair(transaction.reference)
+        base = memorial_base_ref(transaction.reference)
+        self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
 
     # ── Private helpers ────────────────────────────────────────────────────
 

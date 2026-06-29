@@ -271,37 +271,19 @@ class DatabaseInteractions:
 
 
     # ----------------- Memorial transactions --------------------------
-    
-    def get_next_memorial_index(self, date_str: str) -> int:
-        prefix = f"MEM-{date_str.replace('-', '')}-"
-        cursor = self.conn.execute(
-            """
-            SELECT reference FROM transactions
-            WHERE reference LIKE ?
-            """,
-            (f"{prefix}%",)
-        )
-        existing = cursor.fetchall()
-        if not existing:
-            return 1
-        indices = []
-        for (ref,) in existing:
-            # references look like MEM-20260628-003-D / -C
-            part = ref[len(prefix):]        # e.g. "003-D"
-            index_part = part.split("-")[0] # e.g. "003"
-            try:
-                indices.append(int(index_part))
-            except ValueError:
-                pass
-        return max(indices, default=0) + 1
 
-    def save_memorial_transaction(self, date, description, amount, from_category_id, to_category_id):
-        index = self.get_next_memorial_index(date)
-        base_ref = f"MEM-{date.replace('-', '')}-{index:03d}"
+    def get_references_with_prefix(self, prefix: str) -> list[str]:
+        cursor = self.conn.execute(
+            "SELECT reference FROM transactions WHERE reference LIKE ?",
+            (f"{prefix}%",),
+        )
+        return [row[0] for row in cursor.fetchall()]
     
-        debit_ref  = f"{base_ref}-D"
-        credit_ref = f"{base_ref}-C"
-    
+    def save_memorial_transaction(
+        self, date: str, description: str, amount: float,
+        debit_ref: str, credit_ref: str,
+        from_category_id: int, to_category_id: int,
+    ) -> None:
         for ref, cdt_dbt, category_id in [
             (debit_ref,  "DBIT", from_category_id),
             (credit_ref, "CRDT", to_category_id),
@@ -316,40 +298,33 @@ class DatabaseInteractions:
                 (ref, amount, cdt_dbt, date, description, "Memorial", None, category_id, 0),
             )
         self.conn.commit()
-        return base_ref
     
-    def get_memorial_base_ref(self, reference: str) -> str:
-        """Strip -D / -C suffix to get the shared base reference."""
-        return re.sub(r"-[DC]$", "", reference or "")
-    
-    def delete_memorial_pair(self, reference: str):
-        """Delete both legs of a memoriaal pair by any one of their references."""
-        base_ref = self.get_memorial_base_ref(reference)
+    def delete_memorial_pair(self, debit_ref: str, credit_ref: str) -> None:
         self.conn.execute(
             "DELETE FROM transactions WHERE reference = ? OR reference = ?",
-            (f"{base_ref}-D", f"{base_ref}-C"),
+            (debit_ref, credit_ref),
         )
-        self.conn.commit()
-    
-    # ------------------------------------------------------------------
-    # Cleanup
-    # ------------------------------------------------------------------
-    
-    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
-        self.conn.execute("""
-            INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
-            VALUES (?, ?, ?, ?, ?)
-        """, (counterparty, description, amount, cdt_dbt, category_id))
-        self.conn.commit()
-    
-    def get_categorization_examples(self, limit=20) -> list:
-        cursor = self.conn.execute("""
-            SELECT counterparty, description, amount, cdt_dbt, category_id
-            FROM categorization_examples
-            ORDER BY id DESC
-            LIMIT ?
-        """, (limit,))
-        return cursor.fetchall()
+        self.conn.commit() 
+        
+        # ------------------------------------------------------------------
+        # Cleanup
+        # ------------------------------------------------------------------
+        
+        def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
+            self.conn.execute("""
+                INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
+                VALUES (?, ?, ?, ?, ?)
+            """, (counterparty, description, amount, cdt_dbt, category_id))
+            self.conn.commit()
+        
+        def get_categorization_examples(self, limit=20) -> list:
+            cursor = self.conn.execute("""
+                SELECT counterparty, description, amount, cdt_dbt, category_id
+                FROM categorization_examples
+                ORDER BY id DESC
+                LIMIT ?
+            """, (limit,))
+            return cursor.fetchall()
     
     # -----------------------------------------------------
 
