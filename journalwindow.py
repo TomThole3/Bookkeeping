@@ -2,7 +2,7 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QGridLayout, QGroupBox,
     QTableWidget, QTableWidgetItem, QPushButton,
-    QLineEdit, QComboBox, QDoubleSpinBox, QDateEdit, QLabel,
+    QLineEdit, QComboBox, QDoubleSpinBox, QDateEdit, QLabel, QHeaderView
 )
 from PyQt6.QtCore import QDate, Qt
 from journalwindowbackend import JournalWindowBackend
@@ -145,7 +145,10 @@ class JournalWindow(QWidget):
         self._render_table(transactions)
 
     def _render_table(self, transactions):
+        # Set row count
         self.table.setRowCount(len(transactions))
+    
+        # Populate table
         for row, t in enumerate(transactions):
             self.table.setItem(row, 0, QTableWidgetItem(t.reference or ""))
             self.table.setItem(row, 1, QTableWidgetItem(t.cdt_dbt or ""))
@@ -154,8 +157,23 @@ class JournalWindow(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
             self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
             self.table.setItem(row, 6, QTableWidgetItem(t.category_id or ""))
-            # Store the Transaction object on column 0 for retrieval on double-click
+    
+            # Store full transaction object for later retrieval
             self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, t)
+    
+        # --- COLUMN RESIZE POLICY (Option 2) ---
+        header = self.table.horizontalHeader()
+
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)   # Counterparty fixed
+        self.table.setColumnWidth(4, 180)
+        
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
 
     # ── Double-click ───────────────────────────────────────────────────────
 
