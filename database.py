@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-import re
-
 from transaction import Transaction
 from category import Category
 
@@ -87,6 +85,7 @@ class DatabaseInteractions:
             """,
             (category_id,)
         )
+        self.conn.commit()
 
     # ------------------------------------------------------------------
     # Transaction methods
@@ -231,7 +230,7 @@ class DatabaseInteractions:
             SELECT reference, amount, cdt_dbt, date, description,
                    counterparty_name, counterparty_iban, category_id, is_split
             FROM transactions
-            WHERE is_split = 0 AND category_id IS NOT NULL AND counterparty_iban != "NL89ASNB0944870546"
+            WHERE is_split = 0 AND category_id IS NOT NULL
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
@@ -266,9 +265,6 @@ class DatabaseInteractions:
 
     def remove_category(self, category_id):
         self._remove_category_recursive(category_id)
-        self.conn.commit()
-
-
 
     # ----------------- Memorial transactions --------------------------
 
@@ -306,27 +302,27 @@ class DatabaseInteractions:
         )
         self.conn.commit() 
         
-        # ------------------------------------------------------------------
-        # Cleanup
-        # ------------------------------------------------------------------
-        
-        def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
-            self.conn.execute("""
-                INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
-                VALUES (?, ?, ?, ?, ?)
-            """, (counterparty, description, amount, cdt_dbt, category_id))
-            self.conn.commit()
-        
-        def get_categorization_examples(self, limit=20) -> list:
-            cursor = self.conn.execute("""
-                SELECT counterparty, description, amount, cdt_dbt, category_id
-                FROM categorization_examples
-                ORDER BY id DESC
-                LIMIT ?
-            """, (limit,))
-            return cursor.fetchall()
+    # ------------------------------------------------------------------
+    # Categorization Examples
+    # ------------------------------------------------------------------
     
-    # -----------------------------------------------------
+    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
+        self.conn.execute("""
+            INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
+            VALUES (?, ?, ?, ?, ?)
+        """, (counterparty, description, amount, cdt_dbt, category_id))
+        self.conn.commit()
+    
+    def get_categorization_examples(self, limit=20) -> list:
+        cursor = self.conn.execute("""
+            SELECT counterparty, description, amount, cdt_dbt, category_id
+            FROM categorization_examples
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,))
+        return cursor.fetchall()
+
+    # ------------------  Cleanup -----------------------------------
 
     def close(self):
         self.conn.close()
