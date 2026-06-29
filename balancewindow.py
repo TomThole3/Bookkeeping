@@ -2,7 +2,7 @@
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QTreeWidget, QTreeWidgetItem, QPushButton,
-    QTableWidget, QTableWidgetItem, QLabel,
+    QTableWidget, QTableWidgetItem, QLabel, QHeaderView
 )
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
@@ -57,8 +57,20 @@ class BalanceWindow(QWidget):
             item = self._build_tree_item(root)
             self.tree.addTopLevelItem(item)
         self.tree.expandAll()
-        for col in range(4):
-            self.tree.resizeColumnToContents(col)
+        
+        
+    
+        header = self.tree.header()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        
+        self.tree.setColumnWidth(1, 100)  # Income
+        self.tree.setColumnWidth(2, 130)  # Expenditure
+        self.tree.setColumnWidth(3, 90)  # Total
+       
 
     # ── Private helpers ────────────────────────────────────────────────────
 
