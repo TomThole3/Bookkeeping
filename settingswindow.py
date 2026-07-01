@@ -8,20 +8,23 @@ from PyQt6.QtCore import Qt
 import qt_material
 
 SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+DEFAULT_SETTINGS = {"theme": "dark_teal.xml", "use_examples": True}
 
 # All themes shipped with qt-material
 THEMES = qt_material.list_themes()
 
 
 def load_settings() -> dict:
-    """Load persisted settings from disk, returning defaults if missing."""
+    """Load persisted settings from disk. If the file is missing or
+    unreadable, create it with default settings and return those."""
     if os.path.exists(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
             pass
-    return {"theme": "dark_teal.xml", "use_examples": True}
+    save_settings(DEFAULT_SETTINGS)
+    return DEFAULT_SETTINGS.copy()
 
 
 def save_settings(settings: dict) -> None:
