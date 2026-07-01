@@ -60,6 +60,7 @@ class ProcessingWindowBackend:
                     sublist[i].is_split = 1
                     self.db.save_transaction(sublist[i])
             else:
+                print(f"saving category_id: {sublist[0].category_id!r}, type: {type(sublist[0].category_id)}")
                 self.db.update_transaction(sublist[0])
     
     def group_by_reference(self, transactions):

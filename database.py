@@ -154,13 +154,11 @@ class DatabaseInteractions:
     def get_categorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT t.reference, t.amount, t.cdt_dbt, t.date,
-                   t.description, t.counterparty_name,
-                   t.counterparty_iban, c.name, t.is_split
-            FROM transactions t
-            LEFT JOIN categories c ON t.category_id = c.id
-            WHERE t.category_id IS NOT NULL
-            ORDER BY t.date ASC
+            SELECT reference, amount, cdt_dbt, date, description,
+                   counterparty_name, counterparty_iban, category_id, is_split
+            FROM transactions
+            WHERE category_id IS NOT NULL
+            ORDER BY date ASC
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
@@ -174,17 +172,6 @@ class DatabaseInteractions:
             WHERE category_id = ?
             """,
             (category_id,),
-        )
-        return [Transaction(*row) for row in cursor.fetchall()]
-    
-    def get_transactions_with_category_ids(self):
-        cursor = self.conn.execute(
-            """
-            SELECT reference, amount, cdt_dbt, date, description,
-                   counterparty_name, counterparty_iban, category_id, is_split
-            FROM transactions
-            WHERE category_id IS NOT NULL
-            """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
     

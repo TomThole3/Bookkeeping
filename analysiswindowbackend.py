@@ -13,7 +13,7 @@ class AnalysisWindowBackend:
         """Fetch all categorised transactions within the date range."""
         return [
             t for t in self.db.get_categorized_transactions()
-            if date_from <= (t.date or "") <= date_to
+            if date_from <= (t.date or "") <= date_to 
         ]
 
     def _get_all_transactions_in_range(self, date_from: str, date_to: str) -> list:
@@ -71,28 +71,19 @@ class AnalysisWindowBackend:
         }
         """
         transactions = self._get_transactions_in_range(date_from, date_to)
-
-        # Build category id -> top-level category name map
         all_categories = self.db.get_categories()
-        cat_map = {c.name: c for c in all_categories}
+        cat_map = {c.id: c for c in all_categories}
         
-        def top_level_name(cat_key):
-            cat = cat_map.get(cat_key)
-            if not cat:
-                return "Unknown"
-            while cat.parent is not None:
-                cat = cat.parent
-            return cat.name
-
         totals = defaultdict(float)
         for t in transactions:
             if t.cdt_dbt == "DBIT":
                 try:
-                    totals[top_level_name(t.category_id)] += float(t.amount)
+                    cat = cat_map.get(t.category_id)
+                    cat_name = cat.name if cat else "Unknown"
+                    totals[cat_name] += float(t.amount)
                 except (TypeError, ValueError):
                     continue
-
-        # Sort by amount descending
+        
         sorted_items = sorted(totals.items(), key=lambda x: x[1], reverse=True)
         return {
             "categories": [i[0] for i in sorted_items],
@@ -114,15 +105,7 @@ class AnalysisWindowBackend:
         transactions = self._get_transactions_in_range(date_from, date_to)
 
         all_categories = self.db.get_categories()
-        cat_map = {c.name: c for c in all_categories}
-        
-        def top_level_name(cat_key):
-            cat = cat_map.get(cat_key)
-            if not cat:
-                return "Unknown"
-            while cat.parent is not None:
-                cat = cat.parent
-            return cat.name
+        cat_map = {c.id: c for c in all_categories}
 
         # {category: {month: amount}}
         data = defaultdict(lambda: defaultdict(float))
@@ -132,7 +115,9 @@ class AnalysisWindowBackend:
             if t.cdt_dbt == "DBIT":
                 try:
                     month = self._month_key(t.date)
-                    data[top_level_name(t.category_id)][month] += float(t.amount)
+                    cat = cat_map.get(t.category_id)
+                    cat_name = cat.name if cat else "Unknown"
+                    data[cat_name][month] += float(t.amount)
                     months_seen.add(month)
                 except (TypeError, ValueError):
                     continue

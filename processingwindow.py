@@ -223,7 +223,7 @@ class ProcessingWindow(QWidget):
             amount_widget = self.table.cellWidget(row, 2)
         
             amount = amount_widget.value() if amount_widget else 0.0
-            category_id = category_widget.currentData()
+            category_id = category_widget.currentData() 
         
             table_rows.append({
                 "reference": reference,

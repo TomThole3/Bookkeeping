@@ -28,4 +28,3 @@ class Transaction:
         return ", ".join([
             str(self.reference),
         ])
-        

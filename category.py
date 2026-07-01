@@ -25,3 +25,7 @@ class Category:
                 c.parent = parent
                 parent.children.append(c)
         return [c for c in categories if c.parent_id is None]
+    
+    @staticmethod
+    def build_map(categories: list["Category"]) -> dict[int, str]:
+        return {c.id: c.name for c in categories}

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import re
 from database import DatabaseInteractions
-from memorialhelper import memorial_prefix, memorial_base_ref, next_memorial_index, build_memorial_refs
+from memorialhelper import memorial_base_ref
+from category import Category
 
 
 class JournalWindowBackend:
@@ -18,7 +19,7 @@ class JournalWindowBackend:
 
     # ── Queries ────────────────────────────────────────────────────────────
 
-    def get_categories(self) -> list[str]:
+    def get_categories(self) -> list[int]:
         """Return a sorted list of unique category IDs present in the loaded transactions."""
         return sorted({t.category_id for t in self._transactions if t.category_id})
 
@@ -66,6 +67,9 @@ class JournalWindowBackend:
             result.append(t)
 
         return result
+    
+    def get_category_map(self):
+        return Category.build_map(self.db.get_categories())
 
     # ── Mutations ──────────────────────────────────────────────────────────
 

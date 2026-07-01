@@ -29,7 +29,7 @@ class BalanceWindowBackend:
         attached to every node, rolling up all descendant transactions.
         """
         categories = self.db.get_categories()
-        transactions = self.db.get_transactions_with_category_ids()
+        transactions = self.db.get_categorized_transactions()
 
         roots = Category.build_tree(categories)
         category_map = {c.id: c for c in categories}
