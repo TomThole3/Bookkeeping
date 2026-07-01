@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
 from removecategorydialog import RemoveCategoryDialog
+from screen import Screen
 
 
 class BalanceWindow(QWidget):
@@ -58,8 +59,6 @@ class BalanceWindow(QWidget):
             self.tree.addTopLevelItem(item)
         self.tree.expandAll()
         
-        
-    
         header = self.tree.header()
         header.setStretchLastSection(False)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -114,7 +113,7 @@ class BalanceWindow(QWidget):
     # ── Navigation ─────────────────────────────────────────────────────────
 
     def _main_screen(self):
-        self.stack.setCurrentIndex(0)
+        self.stack.setCurrentIndex(Screen.MENU)
 
 
 class CategoryTransactionsWindow(QWidget):

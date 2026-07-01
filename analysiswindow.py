@@ -4,12 +4,11 @@ from PyQt6.QtWidgets import (
     QPushButton, QComboBox, QDateEdit, QLabel,
 )
 from PyQt6.QtCore import QDate
-
 import matplotlib
 matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-
+from screen import Screen
 from analysiswindowbackend import AnalysisWindowBackend
 
 # Chart registry: (display name, backend method name)
@@ -230,4 +229,4 @@ class AnalysisWindow(QWidget):
     # ── Navigation ─────────────────────────────────────────────────────────
 
     def _main_screen(self):
-        self.stack.setCurrentIndex(0)
+        self.stack.setCurrentIndex(Screen.MENU)

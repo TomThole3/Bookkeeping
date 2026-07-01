@@ -50,7 +50,7 @@ class MainWindow(QWidget):
         self.stack.addWidget(self.settings_window)    # index 5
 
         # Set initial screen
-        self.stack.setCurrentIndex(0)
+        self.stack.setCurrentIndex(Screen.MENU)
 
         # Root layout
         root_layout = QVBoxLayout()
