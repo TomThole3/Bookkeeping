@@ -5,43 +5,30 @@ from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
 from analysiswindow import AnalysisWindow
 from settingswindow import SettingsWindow, load_settings, apply_theme
-
+from screen import Screen
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Muntenman Centraal")
-        self.setGeometry(0, 0, 1800, 1000)
-
-        # ---------------------------
-        # STACKED WIDGET (navigation)
-        # ---------------------------
+        self.resize(1800, 1000)
         self.stack = QStackedWidget()
 
         main_menu = QWidget()
         main_layout = QVBoxLayout()
-            
         main_layout.addStretch()
 
-        self.btn_add_transaction = QPushButton("Process transactions")
-        self.btn_add_transaction.clicked.connect(self.processing)
-        main_layout.addWidget(self.btn_add_transaction)
-
-        self.btn_view_reports = QPushButton("Journal")
-        self.btn_view_reports.clicked.connect(self.journal)
-        main_layout.addWidget(self.btn_view_reports)
-
-        self.btn_balance = QPushButton("Balance")
-        self.btn_balance.clicked.connect(self.balance)
-        main_layout.addWidget(self.btn_balance)
-
-        self.btn_analysis = QPushButton("Analysis")
-        self.btn_analysis.clicked.connect(self.analysis)
-        main_layout.addWidget(self.btn_analysis)
-
-        self.btn_settings = QPushButton("Settings")
-        self.btn_settings.clicked.connect(self.settings)
-        main_layout.addWidget(self.btn_settings)
+        buttons = [
+            ("Process transactions", Screen.PROCESSING),
+            ("Journal", Screen.JOURNAL),
+            ("Balance", Screen.BALANCE),
+            ("Analysis", Screen.ANALYSIS),
+            ("Settings", Screen.SETTINGS),
+        ]
+        for label, screen in buttons:
+            btn = QPushButton(label)
+            btn.clicked.connect(lambda checked, s=screen: self.navigate(s))
+            main_layout.addWidget(btn)
 
         main_menu.setLayout(main_layout)
 
@@ -70,27 +57,15 @@ class MainWindow(QWidget):
         root_layout.addWidget(self.stack)
         self.setLayout(root_layout)
 
-    # ---------------------------
-    # NAVIGATION METHODS
-    # ---------------------------
-    def processing(self):
-        self.processing_window.load_transactions()
-        self.stack.setCurrentIndex(1)
-
-    def journal(self):
-        self.journal_window.load_transactions()
-        self.stack.setCurrentIndex(2)
-
-    def balance(self):
-        self.balance_window.load_categories()
-        self.stack.setCurrentIndex(3)
-
-    def analysis(self):
-        self.stack.setCurrentIndex(4)
-
-    def settings(self):
-        self.stack.setCurrentIndex(5)
-
+    def navigate(self, screen: Screen):
+        reload = {
+            Screen.PROCESSING: self.processing_window.load_transactions,
+            Screen.JOURNAL: self.journal_window.load_transactions,
+            Screen.BALANCE: self.balance_window.load_categories,
+        }.get(screen)
+        if reload:
+            reload()
+        self.stack.setCurrentIndex(screen)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
