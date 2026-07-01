@@ -48,10 +48,10 @@ class MemorialDialog(QDialog):
 
     def _validate_and_accept(self):
         if self.from_combo.currentData() == self.to_combo.currentData():
-            QMessageBox.warning(self, "Invalid entry, same debit and credit category")
+            QMessageBox.warning(self, "Invalid entry", "Debit and credit category cannot be the same.")
             return
         if self.amount_spin.value() <= 0:
-            QMessageBox.warning(self, "Invalid entry, amount must be higher than 0")
+            QMessageBox.warning(self, "Invalid entry", "Amount must be higher than 0")
             return
         self.accept()   
 

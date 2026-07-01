@@ -19,45 +19,44 @@ class DatabaseInteractions:
     # ------------------------------------------------------------------
 
     def _create_tables(self):
-        self.conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS categories (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                parent_id INTEGER REFERENCES categories(id)
+        with self.conn:
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS categories (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    parent_id INTEGER REFERENCES categories(id)
+                )
+                """
             )
-            """
-        )
-        self.conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS transactions (
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    reference TEXT UNIQUE,
+                    amount REAL,
+                    cdt_dbt TEXT,
+                    date TEXT,
+                    description TEXT,
+                    counterparty_name TEXT,
+                    counterparty_iban TEXT,
+                    category_id INTEGER REFERENCES categories(id),
+                    is_split INTEGER DEFAULT 0
+                )
+                """
+            )
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS categorization_examples (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                reference TEXT UNIQUE,
+                counterparty TEXT,
+                description TEXT,
                 amount REAL,
                 cdt_dbt TEXT,
-                date TEXT,
-                description TEXT,
-                counterparty_name TEXT,
-                counterparty_iban TEXT,
-                category_id INTEGER REFERENCES categories(id),
-                is_split INTEGER DEFAULT 0
+                category_id INTEGER
+                )
+                """
             )
-            """
-            )
-        self.conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS categorization_examples (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            counterparty TEXT,
-            description TEXT,
-            amount REAL,
-            cdt_dbt TEXT,
-            category_id INTEGER
-            )
-            """
-            )
-        
-        self.conn.commit()
 
     def _remove_category_recursive(self, category_id):
         cursor = self.conn.execute(
@@ -66,79 +65,80 @@ class DatabaseInteractions:
             """,
             (category_id,)
         )
-        for row in cursor.fetchall():
-            self._remove_category_recursive(row[0])
+        child_ids = [row[0] for row in cursor.fetchall()]
+        for child_id in child_ids:
+            self._remove_category_recursive(child_id)
 
-        self.conn.execute(
-            """
-            UPDATE transactions
-            SET category_id = NULL
-            WHERE category_id = ?
-            """,
-            (category_id,)
-        )
+        with self.conn:
+            self.conn.execute(
+                """
+                UPDATE transactions
+                SET category_id = NULL
+                WHERE category_id = ?
+                """,
+                (category_id,)
+            )
 
-        self.conn.execute(
-            """
-            DELETE FROM categories
-            WHERE id = ?
-            """,
-            (category_id,)
-        )
-        self.conn.commit()
+            self.conn.execute(
+                """
+                DELETE FROM categories
+                WHERE id = ?
+                """,
+                (category_id,)
+            )
 
     # ------------------------------------------------------------------
     # Transaction methods
     # ------------------------------------------------------------------
 
     def save_transaction(self, transaction):
-        self.conn.execute(
-            """
-            INSERT OR IGNORE INTO transactions
-                (reference, amount, cdt_dbt, date, description,
-                 counterparty_name, counterparty_iban, category_id, is_split)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                transaction.reference,
-                transaction.amount,
-                transaction.cdt_dbt,
-                transaction.date,
-                transaction.description,
-                transaction.counterparty_name,
-                transaction.counterparty_iban,
-                transaction.category_id,
-                transaction.is_split,
-            ),
-        )
-        self.conn.commit()
+        with self.conn:
+            self.conn.execute(
+                """
+                INSERT OR IGNORE INTO transactions
+                    (reference, amount, cdt_dbt, date, description,
+                     counterparty_name, counterparty_iban, category_id, is_split)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    transaction.reference,
+                    transaction.amount,
+                    transaction.cdt_dbt,
+                    transaction.date,
+                    transaction.description,
+                    transaction.counterparty_name,
+                    transaction.counterparty_iban,
+                    transaction.category_id,
+                    transaction.is_split,
+                ),
+            )
 
     def update_transaction(self, transaction):
-        self.conn.execute(
-            """
-            UPDATE transactions
-            SET description = ?,
-                category_id = ?
-            WHERE reference = ?
-            """,
-            (
-                transaction.description,
-                transaction.category_id,
-                transaction.reference,
+        with self.conn:
+            self.conn.execute(
+                """
+                UPDATE transactions
+                SET description = ?,
+                    category_id = ?
+                WHERE reference = ?
+                """,
+                (
+                    transaction.description,
+                    transaction.category_id,
+                    transaction.reference,
+                )
             )
-        )
-        self.conn.commit()
-        
+
     def update_split_parent(self, reference):
-        self.conn.execute(
-            """
-            UPDATE transactions
-            SET is_split = 1
-            WHERE reference = ?
-            """,
-            (reference,),
-        )
-        self.conn.commit()
+        with self.conn:
+            self.conn.execute(
+                """
+                UPDATE transactions
+                SET is_split = 1
+                WHERE reference = ?
+                """,
+                (reference,),
+            )
 
     def get_uncategorized_transactions(self):
         cursor = self.conn.execute(
@@ -162,7 +162,7 @@ class DatabaseInteractions:
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
-    
+
     def get_transactions_by_category(self, category_id):
         cursor = self.conn.execute(
             """
@@ -174,50 +174,50 @@ class DatabaseInteractions:
             (category_id,),
         )
         return [Transaction(*row) for row in cursor.fetchall()]
-    
+
     def get_amount_and_iban(self, reference):
         cursor = self.conn.execute(
-            """ 
+            """
             SELECT amount, counterparty_iban
             FROM transactions
             WHERE reference = ?
             """,
             (reference,),
-            )
+        )
         return cursor.fetchone()
-    
+
     def remove_category_by_reference(self, reference: str):
-        self.conn.execute(
-            "UPDATE transactions SET category_id = NULL WHERE reference = ?",
-            (reference,)
-        )
-        self.conn.commit()
-    
+        with self.conn:
+            self.conn.execute(
+                "UPDATE transactions SET category_id = NULL WHERE reference = ?",
+                (reference,)
+            )
+
     def remove_category_by_reference_prefix(self, prefix: str):
-        self.conn.execute(
-            "UPDATE transactions SET category_id = NULL WHERE reference LIKE ?",
-            (f"{prefix}-%",)
-        )
-        self.conn.commit()
-        
+        with self.conn:
+            self.conn.execute(
+                "UPDATE transactions SET category_id = NULL WHERE reference LIKE ?",
+                (f"{prefix}-%",)
+            )
+
     def remove_split_parts(self, prefix: str):
-        self.conn.execute(
-            "DELETE FROM transactions WHERE reference LIKE ?",
-            (f"{prefix}-%",)
-        )
-        self.conn.execute(
-            "UPDATE transactions SET is_split = 0 WHERE reference = ?",
-            (prefix,)
-        )
-        self.conn.commit()
-        
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM transactions WHERE reference LIKE ?",
+                (f"{prefix}-%",)
+            )
+            self.conn.execute(
+                "UPDATE transactions SET is_split = 0 WHERE reference = ?",
+                (prefix,)
+            )
+
     def get_all_transactions(self):
         cursor = self.conn.execute(
             """
             SELECT reference, amount, cdt_dbt, date, description,
                    counterparty_name, counterparty_iban, category_id, is_split
             FROM transactions
-            WHERE is_split = 0 AND category_id IS NOT NULL
+            WHERE category_id IS NOT NULL
             """
         )
         return [Transaction(*row) for row in cursor.fetchall()]
@@ -239,14 +239,14 @@ class DatabaseInteractions:
         ]
 
     def add_category(self, category):
-        cursor = self.conn.execute(
-            """
-            INSERT INTO categories (name, parent_id)
-            VALUES (?, ?)
-            """,
-            (category.name, category.parent_id)
-        )
-        self.conn.commit()
+        with self.conn:
+            cursor = self.conn.execute(
+                """
+                INSERT INTO categories (name, parent_id)
+                VALUES (?, ?)
+                """,
+                (category.name, category.parent_id)
+            )
         category.id = cursor.lastrowid
         return category
 
@@ -261,45 +261,45 @@ class DatabaseInteractions:
             (f"{prefix}%",),
         )
         return [row[0] for row in cursor.fetchall()]
-    
+
     def save_memorial_transaction(
         self, date: str, description: str, amount: float,
         debit_ref: str, credit_ref: str,
         from_category_id: int, to_category_id: int,
     ) -> None:
-        for ref, cdt_dbt, category_id in [
-            (debit_ref,  "DBIT", from_category_id),
-            (credit_ref, "CRDT", to_category_id),
-        ]:
-            self.conn.execute(
-                """
-                INSERT OR IGNORE INTO transactions
-                    (reference, amount, cdt_dbt, date, description,
-                     counterparty_name, counterparty_iban, category_id, is_split)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (ref, amount, cdt_dbt, date, description, "Memorial", None, category_id, 0),
-            )
-        self.conn.commit()
-    
+        with self.conn:
+            for ref, cdt_dbt, category_id in [
+                (debit_ref,  "DBIT", from_category_id),
+                (credit_ref, "CRDT", to_category_id),
+            ]:
+                self.conn.execute(
+                    """
+                    INSERT OR IGNORE INTO transactions
+                        (reference, amount, cdt_dbt, date, description,
+                         counterparty_name, counterparty_iban, category_id, is_split)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (ref, amount, cdt_dbt, date, description, "Memorial", None, category_id, 0),
+                )
+
     def delete_memorial_pair(self, debit_ref: str, credit_ref: str) -> None:
-        self.conn.execute(
-            "DELETE FROM transactions WHERE reference = ? OR reference = ?",
-            (debit_ref, credit_ref),
-        )
-        self.conn.commit() 
-        
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM transactions WHERE reference = ? OR reference = ?",
+                (debit_ref, credit_ref),
+            )
+
     # ------------------------------------------------------------------
     # Categorization Examples
     # ------------------------------------------------------------------
-    
+
     def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
-        self.conn.execute("""
-            INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
-            VALUES (?, ?, ?, ?, ?)
-        """, (counterparty, description, amount, cdt_dbt, category_id))
-        self.conn.commit()
-    
+        with self.conn:
+            self.conn.execute("""
+                INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
+                VALUES (?, ?, ?, ?, ?)
+            """, (counterparty, description, amount, cdt_dbt, category_id))
+
     def get_categorization_examples(self, limit=20) -> list:
         cursor = self.conn.execute("""
             SELECT counterparty, description, amount, cdt_dbt, category_id
@@ -308,8 +308,3 @@ class DatabaseInteractions:
             LIMIT ?
         """, (limit,))
         return cursor.fetchall()
-
-    # ------------------  Cleanup -----------------------------------
-
-    def close(self):
-        self.conn.close()
