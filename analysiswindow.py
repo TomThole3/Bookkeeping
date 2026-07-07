@@ -33,7 +33,11 @@ class AnalysisWindow(QWidget):
         # ── Main layout ─────────────────────────────────────────────
         layout = QVBoxLayout(self)
 
-        # ── Top bar ────────────────────────────────────────────────
+        self._add_top_bar(layout)
+        self._add_canvas(layout)
+        self._add_bottom_bar(layout)
+        
+    def _add_top_bar(self, layout):
         top_bar = QHBoxLayout()
 
         top_bar.addWidget(QLabel("From:"))
@@ -63,8 +67,8 @@ class AnalysisWindow(QWidget):
 
         top_bar.addStretch()
         layout.addLayout(top_bar)
-
-        # ── Canvas (EXPANDS) ───────────────────────────────────────
+        
+    def _add_canvas(self, layout):
         self.canvas = None
 
         self.canvas_widget = QWidget()
@@ -72,8 +76,8 @@ class AnalysisWindow(QWidget):
         self.canvas_container.setContentsMargins(0, 0, 0, 0)
 
         layout.addWidget(self.canvas_widget, 1)
-
-        # ── Bottom bar (full-width footer) ─────────────────────────────
+        
+    def _add_bottom_bar(self, layout):
         self.footer_widget = QWidget()
         self.footer_widget.setStyleSheet("background-color: transparent;")  # optional
         
@@ -88,6 +92,7 @@ class AnalysisWindow(QWidget):
         bottom_bar.addWidget(self.home_button)
         
         layout.addWidget(self.footer_widget)
+        
     # ── Data loading ───────────────────────────────────────────────────────
 
     def load(self):

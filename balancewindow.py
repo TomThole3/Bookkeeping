@@ -20,16 +20,19 @@ class BalanceWindow(QWidget):
         self.setGeometry(100, 100, 600, 500)
 
         layout = QVBoxLayout()
-
+        
+        self._create_tree(layout)
+        self._add_buttons(layout)
+        self.setLayout(layout)
+        
+    def _create_tree(self, layout):
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
         self.tree.setHeaderLabels(["Category", "Income", "Expenditure", "Total"])
         self.tree.setAlternatingRowColors(True)
         self.tree.itemDoubleClicked.connect(self._on_item_double_clicked)
-
         for col in (1, 2, 3):
             self.tree.headerItem().setTextAlignment(col, Qt.AlignmentFlag.AlignRight)
-        
         header = self.tree.header()
         header.setStretchLastSection(False)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -39,9 +42,9 @@ class BalanceWindow(QWidget):
         self.tree.setColumnWidth(1, 100)
         self.tree.setColumnWidth(2, 130)
         self.tree.setColumnWidth(3, 90)
-        
         layout.addWidget(self.tree)
-
+        
+    def _add_buttons(self, layout):
         btn_row = QHBoxLayout()
         btn_expand = QPushButton("Expand all")
         btn_expand.clicked.connect(self.tree.expandAll)
@@ -51,12 +54,9 @@ class BalanceWindow(QWidget):
         btn_row.addWidget(btn_collapse)
         btn_row.addStretch()
         layout.addLayout(btn_row)
-        
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
         layout.addWidget(self.btn_return)
-
-        self.setLayout(layout)
 
     # ── Data loading ───────────────────────────────────────────────────────
 

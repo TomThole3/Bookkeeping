@@ -18,7 +18,14 @@ class ProcessingWindow(QWidget):
         self.setGeometry(100, 100, 300, 200)
 
         layout = QVBoxLayout()
+        
+        self._add_table(layout)
+        self._add_buttons(layout)
 
+        self.setLayout(layout)
+        self.load_transactions()
+        
+    def _add_table(self, layout):
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
@@ -27,8 +34,9 @@ class ProcessingWindow(QWidget):
         self.table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         layout.addWidget(self.table)
-        self._setup_column_widths()
-
+        self._setup_column_widths()    
+        
+    def _add_buttons(self, layout):
         self.btn_add_entries = QPushButton("Add new entries")
         self.btn_add_entries.clicked.connect(self._add_entries)
         layout.addWidget(self.btn_add_entries)
@@ -52,10 +60,7 @@ class ProcessingWindow(QWidget):
         self.btn_return = QPushButton("Return to mainscreen")
         self.btn_return.clicked.connect(self._main_screen)
         layout.addWidget(self.btn_return)
-
-        self.setLayout(layout)
-        self.load_transactions()
-
+        
     # --- public ---
 
     def load_transactions(self):
@@ -76,7 +81,7 @@ class ProcessingWindow(QWidget):
         msg.exec()
 
     # --- private: table management ---
-
+        
     def _reset_table(self):
         self.table.setRowCount(0)
         self.table.clearContents()

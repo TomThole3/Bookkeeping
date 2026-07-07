@@ -21,8 +21,17 @@ class JournalWindow(QWidget):
         self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
+        
+        self.add_filters(layout)
+        self.add_table(layout)
 
-        # ── Filter group ───────────────────────────────────────────────────
+        self.btn_return = QPushButton("Return to mainscreen")
+        self.btn_return.clicked.connect(self._main_screen)
+        layout.addWidget(self.btn_return)
+
+        self.setLayout(layout)
+        
+    def add_filters(self, layout):
         filter_group = QGroupBox("Filters")
         filter_grid = QGridLayout()
         filter_grid.setHorizontalSpacing(12)
@@ -94,8 +103,8 @@ class JournalWindow(QWidget):
 
         filter_group.setLayout(filter_grid)
         layout.addWidget(filter_group)
-
-        # ── Table ──────────────────────────────────────────────────────────
+        
+    def add_table(self, layout):
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
@@ -105,13 +114,6 @@ class JournalWindow(QWidget):
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.cellDoubleClicked.connect(self._on_row_double_clicked)
         layout.addWidget(self.table)
-
-        # ── Return button ──────────────────────────────────────────────────
-        self.btn_return = QPushButton("Return to mainscreen")
-        self.btn_return.clicked.connect(self._main_screen)
-        layout.addWidget(self.btn_return)
-
-        self.setLayout(layout)
 
     # ── Data loading ───────────────────────────────────────────────────────
 
