@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import QDate, Qt
 from journalwindowbackend import JournalWindowBackend
 from removecategorydialog import RemoveCategoryDialog
-from category import Category
+from enumerations import Screen
 
 
 class JournalWindow(QWidget):
@@ -209,10 +209,10 @@ class JournalWindow(QWidget):
 
         for w in widgets:
             w.blockSignals(False)
-
+            
         self._apply_filters()
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
     def _main_screen(self):
-        self.stack.setCurrentIndex(0)
+        self.stack.setCurrentIndex(Screen.MENU)

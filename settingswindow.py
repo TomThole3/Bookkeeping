@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 import qt_material
-from screen import Screen
+from enumerations import Screen
 
 SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
 DEFAULT_SETTINGS = {"theme": "dark_teal.xml", "use_examples": True}

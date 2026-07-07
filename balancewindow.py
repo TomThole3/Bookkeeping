@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
 from removecategorydialog import RemoveCategoryDialog
-from screen import Screen
+from enumerations import Screen
 
 
 class BalanceWindow(QWidget):
@@ -25,12 +25,21 @@ class BalanceWindow(QWidget):
         self.tree.setColumnCount(4)
         self.tree.setHeaderLabels(["Category", "Income", "Expenditure", "Total"])
         self.tree.setAlternatingRowColors(True)
-        self.tree.setSortingEnabled(False)
         self.tree.itemDoubleClicked.connect(self._on_item_double_clicked)
 
         for col in (1, 2, 3):
             self.tree.headerItem().setTextAlignment(col, Qt.AlignmentFlag.AlignRight)
-
+        
+        header = self.tree.header()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        self.tree.setColumnWidth(1, 100)
+        self.tree.setColumnWidth(2, 130)
+        self.tree.setColumnWidth(3, 90)
+        
         layout.addWidget(self.tree)
 
         btn_row = QHBoxLayout()
@@ -55,20 +64,8 @@ class BalanceWindow(QWidget):
         roots = self.backend.get_category_tree_with_totals()
         self.tree.clear()
         for root in roots:
-            item = self._build_tree_item(root)
-            self.tree.addTopLevelItem(item)
+            self.tree.addTopLevelItem(self._build_tree_item(root))
         self.tree.expandAll()
-        
-        header = self.tree.header()
-        header.setStretchLastSection(False)
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        
-        self.tree.setColumnWidth(1, 100)  # Income
-        self.tree.setColumnWidth(2, 130)  # Expenditure
-        self.tree.setColumnWidth(3, 90)  # Total
        
 
     # ── Private helpers ────────────────────────────────────────────────────
@@ -181,10 +178,7 @@ class CategoryTransactionsWindow(QWidget):
         t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
         dialog = RemoveCategoryDialog(t, parent=self)
         if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
-            if t.reference and t.reference.startswith("MEM-"):
-                self.backend.delete_memorial_pair(t)
-            else:
-                self.backend.remove_category(t)
+            self.backend.remove_transaction(t)
             transactions = self.backend.get_transactions_for_category(
                 self._current_category_id
             )

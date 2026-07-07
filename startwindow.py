@@ -5,7 +5,7 @@ from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
 from analysiswindow import AnalysisWindow
 from settingswindow import SettingsWindow, load_settings, apply_theme
-from screen import Screen
+from enumerations import Screen
 
 class MainWindow(QWidget):
     def __init__(self):

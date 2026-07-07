@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from screen import Screen
+from enumerations import Screen
 from analysiswindowbackend import AnalysisWindowBackend
 
 # Chart registry: (display name, backend method name)
