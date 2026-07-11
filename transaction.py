@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 class Transaction:
     
-    def __init__(self, reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id=None, is_split=False):
+    def __init__(self, reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id=None, is_split=0):
         self.reference = reference
         self.amount = amount
         self.cdt_dbt = cdt_dbt
