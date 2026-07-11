@@ -211,17 +211,6 @@ class DatabaseInteractions:
                 (prefix,)
             )
 
-    def get_all_transactions(self):
-        cursor = self.conn.execute(
-            """
-            SELECT reference, amount, cdt_dbt, date, description,
-                   counterparty_name, counterparty_iban, category_id, is_split
-            FROM transactions
-            WHERE category_id IS NOT NULL
-            """
-        )
-        return [Transaction(*row) for row in cursor.fetchall()]
-
     # ------------------------------------------------------------------
     # Category methods
     # ------------------------------------------------------------------

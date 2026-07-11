@@ -16,13 +16,6 @@ class AnalysisWindowBackend:
             if date_from <= (t.date or "") <= date_to 
         ]
 
-    def _get_all_transactions_in_range(self, date_from: str, date_to: str) -> list:
-        """Fetch all transactions (categorised and uncategorised) within the date range."""
-        return [
-            t for t in self.db.get_all_transactions()
-            if date_from <= (t.date or "") <= date_to
-        ]
-
     @staticmethod
     def _month_key(date_str: str) -> str:
         """Return 'YYYY-MM' from a 'YYYY-MM-DD' string."""
@@ -39,7 +32,7 @@ class AnalysisWindowBackend:
             "expenditure": [900.0, 1100.0, ...]
         }
         """
-        transactions = self._get_all_transactions_in_range(date_from, date_to)
+        transactions = self._get_transactions_in_range(date_from, date_to)
 
         income = defaultdict(float)
         expenditure = defaultdict(float)
@@ -139,7 +132,7 @@ class AnalysisWindowBackend:
             "amounts": [320.0, ...]
         }
         """
-        transactions = self._get_all_transactions_in_range(date_from, date_to)
+        transactions = self._get_transactions_in_range(date_from, date_to)
 
         totals = defaultdict(float)
         for t in transactions:
@@ -164,7 +157,7 @@ class AnalysisWindowBackend:
             "balance": [120.0, 95.0, ...]
         }
         """
-        transactions = self._get_all_transactions_in_range(date_from, date_to)
+        transactions = self._get_transactions_in_range(date_from, date_to)
 
         # Accumulate net per day
         daily = defaultdict(float)

@@ -9,7 +9,7 @@ class Screen(IntEnum):
     ANALYSIS = 4
     SETTINGS = 5
     
-class TransactionColumn(IntEnum):
+class TransactionColumns(IntEnum):
     REFERENCE = 0
     CRDTDBT = 1
     AMOUNT = 2

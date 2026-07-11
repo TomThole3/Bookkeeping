@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
 from removecategorydialog import RemoveCategoryDialog
-from enumerations import Screen
+from enumerations import Screen, TransactionColumns
 
 
 class BalanceWindow(QWidget):
