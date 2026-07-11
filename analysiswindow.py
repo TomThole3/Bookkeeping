@@ -144,16 +144,14 @@ class AnalysisWindow(QWidget):
         income      = data["income"]
         expenditure = data["expenditure"]
 
-        if not months:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+        if self._no_data_check(months, ax):
             return
 
         x = range(len(months))
         width = 0.35
         ax.bar([i - width / 2 for i in x], income,      width, label="Income",      color="#4caf50")
         ax.bar([i + width / 2 for i in x], expenditure, width, label="Expenditure", color="#f44336")
-        ax.set_xticks(list(x))
-        ax.set_xticklabels(months, rotation=45, ha="right")
+        self._set_x_ticks(ax, months, x)
         ax.set_ylabel("Amount (€)")
         ax.set_title("Income vs Expenditure per Month")
         ax.legend()
@@ -162,8 +160,7 @@ class AnalysisWindow(QWidget):
         categories = data["categories"]
         amounts    = data["amounts"]
 
-        if not categories:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+        if self._no_data_check(categories, ax):
             return
 
         ax.pie(
@@ -178,16 +175,14 @@ class AnalysisWindow(QWidget):
         months = data["months"]
         series = data["series"]
 
-        if not months:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+        if self._no_data_check(months, ax):
             return
 
         x = range(len(months))
         for category, amounts in series.items():
             ax.plot(list(x), amounts, marker="o", label=category)
 
-        ax.set_xticks(list(x))
-        ax.set_xticklabels(months, rotation=45, ha="right")
+        self._set_x_ticks(ax, months, x)
         ax.set_ylabel("Amount (€)")
         ax.set_title("Monthly Spending per Category")
         ax.legend(loc="upper left", fontsize="small")
@@ -196,8 +191,7 @@ class AnalysisWindow(QWidget):
         counterparties = data["counterparties"]
         amounts        = data["amounts"]
 
-        if not counterparties:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+        if self._no_data_check(counterparties, ax):
             return
 
         # Horizontal bar chart — names can be long
@@ -213,8 +207,7 @@ class AnalysisWindow(QWidget):
         dates   = data["dates"]
         balance = data["balance"]
 
-        if not dates:
-            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+        if self._no_data_check(dates, ax):
             return
 
         ax.plot(dates, balance, color="#314159", linewidth=1.5)
@@ -230,6 +223,17 @@ class AnalysisWindow(QWidget):
         ax.set_xticklabels(dates[::n], rotation=45, ha="right")
         ax.set_ylabel("Balance (€)")
         ax.set_title("Running Balance Over Time")
+        
+        
+    def _no_data_check(self, data, ax):
+        if not data:
+            ax.text(0.5, 0.5, "No data", ha="center", va="center")
+            return True
+        return False
+    
+    def _set_x_ticks(self, ax, months, x):
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(months, rotation=45, ha="right")
 
     # ── Navigation ─────────────────────────────────────────────────────────
 
