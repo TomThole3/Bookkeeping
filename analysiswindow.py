@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("QtAgg")
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from enumerations import Screen
+from enumerations import Screen, Colours
 from analysiswindowbackend import AnalysisWindowBackend
 
 # Chart registry: (display name, backend method name)
@@ -87,8 +87,8 @@ class AnalysisWindow(QWidget):
         bottom_bar.addStretch()
         
         self.home_button = QPushButton("Return Home")
-        self.home_button.setMinimumHeight(40)  # optional: makes it feel like a footer button
-        self.home_button.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        self.home_button.setMinimumHeight(40)
+        self.home_button.clicked.connect(self._main_screen)
         bottom_bar.addWidget(self.home_button)
         
         layout.addWidget(self.footer_widget)
@@ -149,8 +149,8 @@ class AnalysisWindow(QWidget):
 
         x = range(len(months))
         width = 0.35
-        ax.bar([i - width / 2 for i in x], income,      width, label="Income",      color="#4caf50")
-        ax.bar([i + width / 2 for i in x], expenditure, width, label="Expenditure", color="#f44336")
+        ax.bar([i - width / 2 for i in x], income,      width, label="Income",      color=Colours.COLOUR1)
+        ax.bar([i + width / 2 for i in x], expenditure, width, label="Expenditure", color=Colours.COLOUR2)
         self._set_x_ticks(ax, months, x)
         ax.set_ylabel("Amount (€)")
         ax.set_title("Income vs Expenditure per Month")
@@ -196,7 +196,7 @@ class AnalysisWindow(QWidget):
 
         # Horizontal bar chart — names can be long
         y = range(len(counterparties))
-        ax.barh(list(y), amounts, color="#800080")
+        ax.barh(list(y), amounts, color=Colours.COLOUR1)
         ax.set_yticks(list(y))
         ax.set_yticklabels(counterparties)
         ax.invert_yaxis()  # Largest at top
@@ -210,14 +210,13 @@ class AnalysisWindow(QWidget):
         if self._no_data_check(dates, ax):
             return
 
-        ax.plot(dates, balance, color="#314159", linewidth=1.5)
+        ax.plot(dates, balance, color=Colours.COLOUR3, linewidth=1.5)
         ax.axhline(0, color="grey", linewidth=0.8, linestyle="--")
         ax.fill_between(dates, balance, 0,
-                         where=[b >= 0 for b in balance], alpha=0.15, color="#4caf50")
+                         where=[b >= 0 for b in balance], alpha=0.15, color=Colours.COLOUR1)
         ax.fill_between(dates, balance, 0,
-                         where=[b < 0  for b in balance], alpha=0.15, color="#f44336")
+                         where=[b < 0  for b in balance], alpha=0.15, color=Colours.COLOUR2)
 
-        # Show every Nth date label to avoid crowding
         n = max(1, len(dates) // 10)
         ax.set_xticks(dates[::n])
         ax.set_xticklabels(dates[::n], rotation=45, ha="right")
