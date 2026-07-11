@@ -29,3 +29,9 @@ class Category:
     @staticmethod
     def build_map(categories: list["Category"]) -> dict[int, str]:
         return {c.id: c.name for c in categories}
+    
+    def __eq__(self, other):
+        return isinstance(other, Category) and self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
