@@ -39,10 +39,7 @@ class AnalysisWindowBackend:
 
         for t in transactions:
             month = self._month_key(t.date)
-            try:
-                amount = float(t.amount)
-            except (TypeError, ValueError):
-                continue
+            amount = float(t.amount)
             if t.cdt_dbt == "CRDT":
                 income[month] += amount
             else:
@@ -70,12 +67,8 @@ class AnalysisWindowBackend:
         totals = defaultdict(float)
         for t in transactions:
             if t.cdt_dbt == "DBIT":
-                try:
-                    cat = cat_map.get(t.category_id)
-                    cat_name = cat.name if cat else "Unknown"
-                    totals[cat_name] += float(t.amount)
-                except (TypeError, ValueError):
-                    continue
+                cat = cat_map.get(t.category_id)
+                totals[cat.name] += float(t.amount)
         
         sorted_items = sorted(totals.items(), key=lambda x: x[1], reverse=True)
         return {
@@ -106,14 +99,10 @@ class AnalysisWindowBackend:
 
         for t in transactions:
             if t.cdt_dbt == "DBIT":
-                try:
-                    month = self._month_key(t.date)
-                    cat = cat_map.get(t.category_id)
-                    cat_name = cat.name if cat else "Unknown"
-                    data[cat_name][month] += float(t.amount)
-                    months_seen.add(month)
-                except (TypeError, ValueError):
-                    continue
+                month = self._month_key(t.date)
+                cat = cat_map.get(t.category_id)
+                data[cat.name][month] += float(t.amount)
+                months_seen.add(month)
 
         months = sorted(months_seen)
         return {
@@ -137,11 +126,8 @@ class AnalysisWindowBackend:
         totals = defaultdict(float)
         for t in transactions:
             if t.cdt_dbt == "DBIT":
-                try:
-                    name = t.counterparty_name or "Unknown"
-                    totals[name] += float(t.amount)
-                except (TypeError, ValueError):
-                    continue
+                name = t.counterparty_name or "Unknown"
+                totals[name] += float(t.amount)
 
         sorted_items = sorted(totals.items(), key=lambda x: x[1], reverse=True)[:top_n]
         return {
@@ -162,10 +148,7 @@ class AnalysisWindowBackend:
         # Accumulate net per day
         daily = defaultdict(float)
         for t in transactions:
-            try:
-                amount = float(t.amount)
-            except (TypeError, ValueError):
-                continue
+            amount = float(t.amount)
             if t.cdt_dbt == "CRDT":
                 daily[t.date] += amount
             else:
