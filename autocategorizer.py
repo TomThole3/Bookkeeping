@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import ollama
+import re
 
 
 class AutoCategorizer:
@@ -72,10 +73,12 @@ class AutoCategorizer:
         return self._parse_response(raw)
 
     def _parse_response(self, raw: str) -> dict:
-        if "```" in raw:
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        raw = match.group(0) if match else raw.strip()
+        try:
+            assignments = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
         raw = raw.strip()
         try:
             assignments = json.loads(raw)
@@ -86,3 +89,10 @@ class AutoCategorizer:
             for ref, name in assignments.items()
             if name in self._category_map
         }
+    
+    def is_ollama_available(self) -> bool:
+        try:
+            ollama.list()
+            return True
+        except Exception:
+            return False
