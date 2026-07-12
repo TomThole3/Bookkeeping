@@ -114,6 +114,17 @@ class BalanceWindow(QWidget):
 
 
 class CategoryTransactionsWindow(QWidget):
+    # Human-readable header text for each TransactionColumns entry, kept in
+    # column order so it can be built directly from the enum.
+    _COLUMN_LABELS = {
+        TransactionColumns.REFERENCE: "Reference",
+        TransactionColumns.CRDTDBT: "CrdtDbt",
+        TransactionColumns.AMOUNT: "Amount",
+        TransactionColumns.DATE: "Date",
+        TransactionColumns.COUNTERPARTY: "Counterparty",
+        TransactionColumns.DESCRIPTION: "Description",
+    }
+
     def __init__(self, stack, backend: BalanceWindowBackend):
         super().__init__()
         self.stack = stack
@@ -138,11 +149,10 @@ class CategoryTransactionsWindow(QWidget):
         layout.addLayout(header_row)
 
         self.table = QTableWidget()
-        self.table.setColumnCount(6)
-        self.table.setHorizontalHeaderLabels([
-            "Reference", "CrdtDbt", "Amount", "Date",
-            "Counterparty", "Description",
-        ])
+        self.table.setColumnCount(len(TransactionColumns))
+        self.table.setHorizontalHeaderLabels(
+            [self._COLUMN_LABELS[col] for col in TransactionColumns]
+        )
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setAlternatingRowColors(True)
         self.table.cellDoubleClicked.connect(self._on_row_double_clicked)
@@ -160,22 +170,22 @@ class CategoryTransactionsWindow(QWidget):
     def _render_table(self, transactions: list):
         self.table.setRowCount(len(transactions))
         for row, t in enumerate(transactions):
-            self.table.setItem(row, 0, QTableWidgetItem(t.reference or ""))
-            self.table.setItem(row, 1, QTableWidgetItem(t.cdt_dbt or ""))
-            self.table.setItem(row, 2, QTableWidgetItem(str(t.amount)))
-            self.table.setItem(row, 3, QTableWidgetItem(t.date or ""))
-            self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
-            self.table.setItem(row, 5, QTableWidgetItem(t.description or ""))
+            self.table.setItem(row, TransactionColumns.REFERENCE, QTableWidgetItem(t.reference or ""))
+            self.table.setItem(row, TransactionColumns.CRDTDBT, QTableWidgetItem(t.cdt_dbt or ""))
+            self.table.setItem(row, TransactionColumns.AMOUNT, QTableWidgetItem(str(t.amount)))
+            self.table.setItem(row, TransactionColumns.DATE, QTableWidgetItem(t.date or ""))
+            self.table.setItem(row, TransactionColumns.COUNTERPARTY, QTableWidgetItem(t.counterparty_name or ""))
+            self.table.setItem(row, TransactionColumns.DESCRIPTION, QTableWidgetItem(t.description or ""))
             # Store Transaction object for retrieval on double-click
-            self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, t)
+            self.table.item(row, TransactionColumns.REFERENCE).setData(Qt.ItemDataRole.UserRole, t)
 
-        for col in range(6):
+        for col in TransactionColumns:
             self.table.resizeColumnToContents(col)
 
     # ── Double-click ───────────────────────────────────────────────────────
 
     def _on_row_double_clicked(self, row: int, _column: int):
-        t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        t = self.table.item(row, TransactionColumns.REFERENCE).data(Qt.ItemDataRole.UserRole)
         dialog = RemoveCategoryDialog(t, parent=self)
         if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
             self.backend.remove_transaction(t)

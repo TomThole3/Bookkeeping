@@ -75,11 +75,15 @@ class JournalWindowBackend:
 
     def remove_category(self, transaction) -> None:
         if transaction.is_split:
-            prefix = re.sub(r"-\d+$", "", transaction.reference or "")
-            self.db.remove_split_parts(prefix)
+           prefix = re.sub(r"-\d+$", "", transaction.reference or "")
+           self.db.remove_split_parts(prefix)
         else:
-            self.db.remove_category_by_reference(transaction.reference)
-
+           self.db.remove_category_by_reference(transaction.reference)
+           
+        def delete_memorial_pair(self, transaction) -> None:
+            base = memorial_base_ref(transaction.reference)
+            self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
+            
     # ── Private helpers ────────────────────────────────────────────────────
 
     @staticmethod
@@ -97,7 +101,3 @@ class JournalWindowBackend:
             return date_from <= raw_date <= date_to
         except TypeError:
             return True
-        
-    def delete_memorial_pair(self, transaction) -> None:
-        base = memorial_base_ref(transaction.reference)
-        self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")

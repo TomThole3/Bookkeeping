@@ -7,6 +7,7 @@ class Category:
         self.parent_id = parent_id  # raw foreign key from DB
         self.parent = None          # set by build_tree
         self.children = []          # set by build_tree
+        self.totals = None # lazily set by balancewindow
 
     def full_path(self):
         if self.parent is None:

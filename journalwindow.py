@@ -177,15 +177,11 @@ class JournalWindow(QWidget):
 
     # ── Double-click ───────────────────────────────────────────────────────
 
-    def _on_row_double_clicked(self, row: int, _column: int):
-        t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
-        dialog = RemoveCategoryDialog(t, parent=self)
-        if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
-            if t.reference and t.reference.startswith("MEM-"):
-                self.backend.delete_memorial_pair(t)
-            else:
-                self.backend.remove_category(t)
-            self.load_transactions()
+    def remove_transaction(self, transaction) -> None:
+        if transaction.reference and transaction.reference.startswith("MEM-"):
+            self.backend.delete_memorial_pair(transaction)
+        else:
+            self.backend.remove_category(transaction)
 
     # ── Clear filters ──────────────────────────────────────────────────────
 
