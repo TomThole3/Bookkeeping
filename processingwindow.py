@@ -7,11 +7,11 @@ from memorialdialog import MemorialDialog
 from enumerations import TransactionColumns
 
 class ProcessingWindow(QWidget):
-    def __init__(self, stack):
+    def __init__(self, stack, db):
         super().__init__()
 
         self.stack = stack
-        self.backend = ProcessingWindowBackend(self)
+        self.backend = ProcessingWindowBackend(self, db)
         self._ai_suggestions = {}  # {reference: category_id}
 
         self.setWindowTitle("Muntenman Schuifwerk")
