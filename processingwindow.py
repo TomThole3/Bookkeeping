@@ -97,7 +97,7 @@ class ProcessingWindow(QWidget):
         is_first = split_index == 0
         if is_first:
             self._set_readonly_item(row, 0, transaction.reference)
-            self._set_readonly_item(row, 1, transaction.cdt_dbt)
+            self._set_readonly_item(row, 1, transaction.side)
             self._set_readonly_item(row, 3, transaction.date)
             self._set_readonly_item(row, 4, transaction.counterparty_name or "")
             self.table.setItem(row, 5, QTableWidgetItem(transaction.description or ""))
@@ -153,7 +153,7 @@ class ProcessingWindow(QWidget):
         header = self.table.horizontalHeader()
         # Fixed columns
         self.table.setColumnWidth(TransactionColumns.REFERENCE, 130)  # reference
-        self.table.setColumnWidth(TransactionColumns.CRDTDBT, 50)   # cdt_dbt
+        self.table.setColumnWidth(TransactionColumns.SIDE, 50)   # side
         self.table.setColumnWidth(TransactionColumns.AMOUNT, 110)  # amount spinbox
         self.table.setColumnWidth(TransactionColumns.DATE, 100)  # date
         self.table.setColumnWidth(TransactionColumns.COUNTERPARTY, 200)  # counterparty
@@ -191,7 +191,7 @@ class ProcessingWindow(QWidget):
     def _save_categories(self):
         table_rows = []
     
-        last_reference = last_cdt_dbt = last_date = last_counterparty = last_description = ""
+        last_reference = last_side = last_date = last_counterparty = last_description = ""
     
         for row in range(self.table.rowCount()):
             category_widget = self.table.cellWidget(row, 6)
@@ -203,19 +203,19 @@ class ProcessingWindow(QWidget):
     
             if is_continuation:
                 reference    = last_reference
-                cdt_dbt      = last_cdt_dbt
+                side      = last_side
                 date         = last_date
                 counterparty = last_counterparty
                 description  = last_description
             else:
                 reference    = reference_item.text()
-                cdt_dbt      = self.table.item(row, 1).text()
+                side      = self.table.item(row, 1).text()
                 date         = self.table.item(row, 3).text()
                 counterparty = self.table.item(row, 4).text()
                 description  = self.table.item(row, 5).text()
     
-                last_reference, last_cdt_dbt, last_date, last_counterparty, last_description = (
-                    reference, cdt_dbt, date, counterparty, description
+                last_reference, last_side, last_date, last_counterparty, last_description = (
+                    reference, side, date, counterparty, description
                 )
     
             amount_widget = self.table.cellWidget(row, 2)
@@ -224,7 +224,7 @@ class ProcessingWindow(QWidget):
     
             table_rows.append({
                 "reference": reference,
-                "cdt_dbt": cdt_dbt,
+                "side": side,
                 "date": date,
                 "counterparty": counterparty,
                 "description": description,
@@ -246,7 +246,7 @@ class ProcessingWindow(QWidget):
                    counterparty=row_data["counterparty"],
                    description=row_data["description"],
                    amount=row_data["amount"],
-                   cdt_dbt=row_data["cdt_dbt"],
+                   side=row_data["side"],
                    category_id=actual_category_id,
                )
     

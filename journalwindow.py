@@ -43,11 +43,11 @@ class JournalWindow(QWidget):
         self.filter_reference.textChanged.connect(self._apply_filters)
         filter_grid.addWidget(self.filter_reference, 0, 1)
 
-        filter_grid.addWidget(QLabel("Crdt/Dbt:"), 0, 2)
-        self.filter_cdt_dbt = QComboBox()
-        self.filter_cdt_dbt.addItems(["All", "CRDT", "DBIT"])
-        self.filter_cdt_dbt.currentIndexChanged.connect(self._apply_filters)
-        filter_grid.addWidget(self.filter_cdt_dbt, 0, 3)
+        filter_grid.addWidget(QLabel("Side:"), 0, 2)
+        self.filter_side = QComboBox()
+        self.filter_side.addItems(["All", "CRDT", "DBIT"])
+        self.filter_side.currentIndexChanged.connect(self._apply_filters)
+        filter_grid.addWidget(self.filter_side, 0, 3)
 
         filter_grid.addWidget(QLabel("Category:"), 0, 4)
         self.filter_category = QComboBox()
@@ -108,7 +108,7 @@ class JournalWindow(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(7)
         self.table.setHorizontalHeaderLabels([
-            "Reference", "CrdtDbt", "Amount", "Date",
+            "Reference", "Side", "Amount", "Date",
             "Counterparty", "Description", "Category",
         ])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
@@ -136,7 +136,7 @@ class JournalWindow(QWidget):
     def _build_filters(self) -> dict:
         return {
             "reference":    self.filter_reference.text(),
-            "cdt_dbt":      self.filter_cdt_dbt.currentText(),
+            "side":      self.filter_side.currentText(),
             "category_id":  self.filter_category.currentData(),  # int or None
             "counterparty": self.filter_counterparty.text(),
             "description":  self.filter_description.text(),
@@ -155,7 +155,7 @@ class JournalWindow(QWidget):
 
         for row, t in enumerate(transactions):
             self.table.setItem(row, 0, QTableWidgetItem(t.reference or ""))
-            self.table.setItem(row, 1, QTableWidgetItem(t.cdt_dbt or ""))
+            self.table.setItem(row, 1, QTableWidgetItem(t.side or ""))
             self.table.setItem(row, 2, QTableWidgetItem(str(t.amount)))
             self.table.setItem(row, 3, QTableWidgetItem(t.date or ""))
             self.table.setItem(row, 4, QTableWidgetItem(t.counterparty_name or ""))
@@ -194,7 +194,7 @@ class JournalWindow(QWidget):
 
     def _clear_filters(self):
         widgets = [
-            self.filter_reference, self.filter_cdt_dbt, self.filter_category,
+            self.filter_reference, self.filter_side, self.filter_category,
             self.filter_counterparty, self.filter_description,
             self.filter_amount_min, self.filter_amount_max,
             self.filter_date_from, self.filter_date_to,
@@ -203,7 +203,7 @@ class JournalWindow(QWidget):
             w.blockSignals(True)
 
         self.filter_reference.clear()
-        self.filter_cdt_dbt.setCurrentIndex(0)
+        self.filter_side.setCurrentIndex(0)
         self.filter_category.setCurrentIndex(0)
         self.filter_counterparty.clear()
         self.filter_description.clear()

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 class Transaction:
     
-    def __init__(self, reference, amount, cdt_dbt, date, description, counterparty_name, counterparty_iban, category_id=None, is_split=0):
+    def __init__(self, reference, amount, side, date, description, counterparty_name, counterparty_iban, category_id=None, is_split=0):
         self.reference = reference
         self.amount = amount
-        self.cdt_dbt = cdt_dbt
+        self.side = side
         self.date = date
         self.description = description
         self.counterparty_name = counterparty_name
@@ -17,7 +17,7 @@ class Transaction:
         return cls(
             reference=entry["NtryRef"],
             amount=float(entry["Amount"]),
-            cdt_dbt=entry["CdtDbtInd"],
+            side=entry["CdtDbtInd"],
             date=entry["BookgDt"],
             description=entry["AddtlNtryInf"],
             counterparty_name=entry.get("Counterparty_Name"),

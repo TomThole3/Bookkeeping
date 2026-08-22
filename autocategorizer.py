@@ -20,11 +20,11 @@ class AutoCategorizer:
             return ""
         lines = ["PAST EXAMPLES (use these to guide your decisions):"]
         for ex in self.examples:
-            counterparty, description, amount, cdt_dbt, category_id = ex
+            counterparty, description, amount, side, category_id = ex
             category_name = self._id_to_name.get(category_id, "Unknown")
             lines.append(
                 f'  counterparty="{counterparty}", description="{description}", '
-                f'amount={amount}, type={cdt_dbt} -> "{category_name}"'
+                f'amount={amount}, type={side} -> "{category_name}"'
             )
         return "\n".join(lines)
 
@@ -44,7 +44,7 @@ class AutoCategorizer:
                 "counterparty": t.counterparty_name or "",
                 "description": t.description or "",
                 "amount": str(t.amount),
-                "type": t.cdt_dbt,
+                "type": t.side,
             }
             for t in transactions
         ]

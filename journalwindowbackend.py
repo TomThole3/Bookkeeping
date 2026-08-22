@@ -28,7 +28,7 @@ class JournalWindowBackend:
 
         Expected filter keys (all optional / nullable):
             reference    (str)  – case-insensitive substring match
-            cdt_dbt      (str)  – exact match; "All" means no filter
+            side      (str)  – exact match; "All" means no filter
             category     (str)  – exact match; "All" means no filter
             counterparty (str)  – case-insensitive substring match
             description  (str)  – case-insensitive substring match
@@ -38,7 +38,7 @@ class JournalWindowBackend:
             date_to      (str)  – "YYYY-MM-DD"
         """
         reference    = (filters.get("reference") or "").lower()
-        cdt_dbt      = filters.get("cdt_dbt", "All")
+        side      = filters.get("side", "All")
         category_id = filters.get("category_id")
         counterparty = (filters.get("counterparty") or "").lower()
         description  = (filters.get("description") or "").lower()
@@ -51,7 +51,7 @@ class JournalWindowBackend:
         for t in self._transactions:
             if reference and reference not in (t.reference or "").lower():
                 continue
-            if cdt_dbt != "All" and t.cdt_dbt != cdt_dbt:
+            if side != "All" and t.side != side:
                 continue
             if category_id is not None and t.category_id != category_id:
                 continue

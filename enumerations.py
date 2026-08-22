@@ -11,7 +11,7 @@ class Screen(IntEnum):
     
 class TransactionColumns(IntEnum):
     REFERENCE = 0
-    CRDTDBT = 1
+    SIDE = 1
     AMOUNT = 2
     DATE = 3
     COUNTERPARTY = 4

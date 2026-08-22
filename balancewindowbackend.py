@@ -43,7 +43,7 @@ class BalanceWindowBackend:
                     amount = float(t.amount)
                 except (TypeError, ValueError):
                     amount = 0.0
-                if t.cdt_dbt == "CRDT":
+                if t.side == "CRDT":
                     cat.totals.income += amount
                 else:
                     cat.totals.expenditure += amount

@@ -35,7 +35,7 @@ class DatabaseInteractions:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reference TEXT UNIQUE,
                     amount REAL,
-                    cdt_dbt TEXT,
+                    side TEXT,
                     date TEXT,
                     description TEXT,
                     counterparty_name TEXT,
@@ -52,7 +52,7 @@ class DatabaseInteractions:
                 counterparty TEXT,
                 description TEXT,
                 amount REAL,
-                cdt_dbt TEXT,
+                side TEXT,
                 category_id INTEGER
                 )
                 """
@@ -96,14 +96,14 @@ class DatabaseInteractions:
             self.conn.execute(
                 """
                 INSERT OR IGNORE INTO transactions
-                    (reference, amount, cdt_dbt, date, description,
+                    (reference, amount, side, date, description,
                      counterparty_name, counterparty_iban, category_id, is_split)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     transaction.reference,
                     transaction.amount,
-                    transaction.cdt_dbt,
+                    transaction.side,
                     transaction.date,
                     transaction.description,
                     transaction.counterparty_name,
@@ -143,7 +143,7 @@ class DatabaseInteractions:
     def get_uncategorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description,
+            SELECT reference, amount, side, date, description,
                    counterparty_name, counterparty_iban, category_id
             FROM transactions
             WHERE category_id IS NULL AND is_split = 0
@@ -154,7 +154,7 @@ class DatabaseInteractions:
     def get_categorized_transactions(self):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description,
+            SELECT reference, amount, side, date, description,
                    counterparty_name, counterparty_iban, category_id, is_split
             FROM transactions
             WHERE category_id IS NOT NULL
@@ -166,7 +166,7 @@ class DatabaseInteractions:
     def get_transactions_by_category(self, category_id):
         cursor = self.conn.execute(
             """
-            SELECT reference, amount, cdt_dbt, date, description,
+            SELECT reference, amount, side, date, description,
                    counterparty_name, counterparty_iban, category_id, is_split
             FROM transactions
             WHERE category_id = ?
@@ -257,18 +257,18 @@ class DatabaseInteractions:
         from_category_id: int, to_category_id: int,
     ) -> None:
         with self.conn:
-            for ref, cdt_dbt, category_id in [
+            for ref, side, category_id in [
                 (debit_ref,  "DBIT", from_category_id),
                 (credit_ref, "CRDT", to_category_id),
             ]:
                 self.conn.execute(
                     """
                     INSERT OR IGNORE INTO transactions
-                        (reference, amount, cdt_dbt, date, description,
+                        (reference, amount, side, date, description,
                          counterparty_name, counterparty_iban, category_id, is_split)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (ref, amount, cdt_dbt, date, description, "Memorial", None, category_id, 0),
+                    (ref, amount, side, date, description, "Memorial", None, category_id, 0),
                 )
 
     def delete_memorial_pair(self, debit_ref: str, credit_ref: str) -> None:
@@ -282,16 +282,16 @@ class DatabaseInteractions:
     # Categorization Examples
     # ------------------------------------------------------------------
 
-    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
+    def save_categorization_example(self, counterparty, description, amount, side, category_id):
         with self.conn:
             self.conn.execute("""
-                INSERT INTO categorization_examples (counterparty, description, amount, cdt_dbt, category_id)
+                INSERT INTO categorization_examples (counterparty, description, amount, side, category_id)
                 VALUES (?, ?, ?, ?, ?)
-            """, (counterparty, description, amount, cdt_dbt, category_id))
+            """, (counterparty, description, amount, side, category_id))
 
     def get_categorization_examples(self, limit=20) -> list:
         cursor = self.conn.execute("""
-            SELECT counterparty, description, amount, cdt_dbt, category_id
+            SELECT counterparty, description, amount, side, category_id
             FROM categorization_examples
             ORDER BY id DESC
             LIMIT ?

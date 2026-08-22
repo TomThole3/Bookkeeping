@@ -118,7 +118,7 @@ class CategoryTransactionsWindow(QWidget):
     # column order so it can be built directly from the enum.
     _COLUMN_LABELS = {
         TransactionColumns.REFERENCE: "Reference",
-        TransactionColumns.CRDTDBT: "CrdtDbt",
+        TransactionColumns.SIDE: "Side",
         TransactionColumns.AMOUNT: "Amount",
         TransactionColumns.DATE: "Date",
         TransactionColumns.COUNTERPARTY: "Counterparty",
@@ -171,7 +171,7 @@ class CategoryTransactionsWindow(QWidget):
         self.table.setRowCount(len(transactions))
         for row, t in enumerate(transactions):
             self.table.setItem(row, TransactionColumns.REFERENCE, QTableWidgetItem(t.reference or ""))
-            self.table.setItem(row, TransactionColumns.CRDTDBT, QTableWidgetItem(t.cdt_dbt or ""))
+            self.table.setItem(row, TransactionColumns.SIDE, QTableWidgetItem(t.side or ""))
             self.table.setItem(row, TransactionColumns.AMOUNT, QTableWidgetItem(str(t.amount)))
             self.table.setItem(row, TransactionColumns.DATE, QTableWidgetItem(t.date or ""))
             self.table.setItem(row, TransactionColumns.COUNTERPARTY, QTableWidgetItem(t.counterparty_name or ""))

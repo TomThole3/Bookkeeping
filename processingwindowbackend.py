@@ -35,7 +35,7 @@ class ProcessingWindowBackend:
             t = Transaction(
                 reference=row["reference"],
                 amount=row["amount"],
-                cdt_dbt=row.get("cdt_dbt"),
+                side=row.get("side"),
                 date=row.get("date"),
                 description=row.get("description"),
                 counterparty_name=row.get("counterparty"),
@@ -78,8 +78,8 @@ class ProcessingWindowBackend:
         categorizer = AutoCategorizer(categories, examples=examples, use_examples=self.settings.get("use_examples", True))
         return categorizer.categorize(transactions)
     
-    def save_categorization_example(self, counterparty, description, amount, cdt_dbt, category_id):
-        self.db.save_categorization_example(counterparty, description, amount, cdt_dbt, category_id)
+    def save_categorization_example(self, counterparty, description, amount, side, category_id):
+        self.db.save_categorization_example(counterparty, description, amount, side, category_id)
     
     def get_categorization_examples(self) -> list:
         return self.db.get_categorization_examples()

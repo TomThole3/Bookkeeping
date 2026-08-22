@@ -38,7 +38,7 @@ class AnalysisWindowBackend:
         for t in transactions:
             month = self._month_key(t.date)
             amount = float(t.amount)
-            if t.cdt_dbt == "CRDT":
+            if t.side == "CRDT":
                 income[month] += amount
             else:
                 expenditure[month] += amount
@@ -64,7 +64,7 @@ class AnalysisWindowBackend:
         
         totals = defaultdict(float)
         for t in transactions:
-            if t.cdt_dbt == "DBIT":
+            if t.side == "DBIT":
                 cat = cat_map.get(t.category_id)
                 totals[cat.name] += float(t.amount)
         
@@ -96,7 +96,7 @@ class AnalysisWindowBackend:
         months_seen = set()
 
         for t in transactions:
-            if t.cdt_dbt == "DBIT":
+            if t.side == "DBIT":
                 month = self._month_key(t.date)
                 cat = cat_map.get(t.category_id)
                 data[cat.name][month] += float(t.amount)
@@ -123,7 +123,7 @@ class AnalysisWindowBackend:
 
         totals = defaultdict(float)
         for t in transactions:
-            if t.cdt_dbt == "DBIT":
+            if t.side == "DBIT":
                 name = t.counterparty_name or "Unknown"
                 totals[name] += float(t.amount)
 
@@ -147,7 +147,7 @@ class AnalysisWindowBackend:
         daily = defaultdict(float)
         for t in transactions:
             amount = float(t.amount)
-            if t.cdt_dbt == "CRDT":
+            if t.side == "CRDT":
                 daily[t.date] += amount
             else:
                 daily[t.date] -= amount
