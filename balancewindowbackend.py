@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-from database import DatabaseInteractions
 from category import Category
 from memorialhelper import memorial_base_ref
 
@@ -20,8 +19,8 @@ class CategoryTotals:
 
 
 class BalanceWindowBackend:
-    def __init__(self):
-        self.db = DatabaseInteractions()
+    def __init__(self, db):
+        self.db = db
 
     def get_category_tree_with_totals(self) -> list:
         """

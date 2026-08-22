@@ -41,7 +41,7 @@ class MainWindow(QWidget):
         self.journal_window = JournalWindow(self.stack, self.db)
         self.balance_window = BalanceWindow(self.stack, self.db)
         self.analysis_window = AnalysisWindow(self.stack, self.db)
-        self.settings_window = SettingsWindow(self.stack, self.db)
+        self.settings_window = SettingsWindow(self.stack)
 
         # Add all screens to stack
         self.stack.addWidget(main_menu)               # index 0

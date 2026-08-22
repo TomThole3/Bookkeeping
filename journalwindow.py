@@ -11,9 +11,9 @@ from enumerations import Screen
 
 
 class JournalWindow(QWidget):
-    def __init__(self, stack):
+    def __init__(self, stack, db):
         super().__init__()
-        self.backend = JournalWindowBackend()
+        self.backend = JournalWindowBackend(db)
         self.stack = stack
         self._category_map: dict[int, str] = {}
 

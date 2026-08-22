@@ -11,9 +11,9 @@ from enumerations import Screen, TransactionColumns
 
 
 class BalanceWindow(QWidget):
-    def __init__(self, stack):
+    def __init__(self, stack, db):
         super().__init__()
-        self.backend = BalanceWindowBackend()
+        self.backend = BalanceWindowBackend(db)
         self.stack = stack
 
         self.setWindowTitle("Muntenman Balans")

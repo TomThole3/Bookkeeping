@@ -21,10 +21,10 @@ CHARTS = [
 ]
 
 class AnalysisWindow(QWidget):
-    def __init__(self, stack):
+    def __init__(self, stack, db):
         super().__init__()
 
-        self.backend = AnalysisWindowBackend()
+        self.backend = AnalysisWindowBackend(db)
         self.stack = stack
 
         self.setWindowTitle("Muntenman Analyse")

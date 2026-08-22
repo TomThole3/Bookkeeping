@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-from database import DatabaseInteractions
-
 
 class AnalysisWindowBackend:
-    def __init__(self):
-        self.db = DatabaseInteractions()
+    def __init__(self, db):
+        self.db = db
 
     # ── Private helpers ────────────────────────────────────────────────────
 

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 import re
-from database import DatabaseInteractions
 from memorialhelper import memorial_base_ref
 from category import Category
 
 
 class JournalWindowBackend:
-    def __init__(self):
-        self.db = DatabaseInteractions()
+    def __init__(self, db):
+        self.db = db
         self._transactions = []
 
     # ── Data loading ───────────────────────────────────────────────────────
