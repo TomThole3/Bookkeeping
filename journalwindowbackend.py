@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
-from memorialhelper import memorial_base_ref
+from memorialhelper import memorial_base_ref, MEMORIAL_PREFIX
 from category import Category
 
 
@@ -84,7 +84,7 @@ class JournalWindowBackend:
         self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
         
     def remove_transaction(self, transaction):
-        if transaction.reference and transaction.reference.startswith("MEM-"):
+        if transaction.reference.startswith(MEMORIAL_PREFIX):
             self.delete_memorial_pair(transaction)
         else:
             self.remove_category(transaction)

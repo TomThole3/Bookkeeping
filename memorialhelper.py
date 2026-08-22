@@ -4,13 +4,14 @@ import re
 DEBIT_SUFFIX = "-D"
 CREDIT_SUFFIX = "-C"
 MEMORIAL_PREFIX = "MEM-"
+MEMORIAL_LEG_RE = re.compile(f"({re.escape(DEBIT_SUFFIX)}|{re.escape(CREDIT_SUFFIX)})$")    
 
 def memorial_prefix(date_str: str) -> str:
     return f"{MEMORIAL_PREFIX}-{date_str.replace('-', '')}-"
 
 def memorial_base_ref(reference: str) -> str:
     """Strip -D / -C suffix to get the shared base reference."""
-    return re.compile(f"({re.escape(DEBIT_SUFFIX)}|{re.escape(CREDIT_SUFFIX)})$").sub("", reference or "")
+    return MEMORIAL_LEG_RE.sub("", reference or "")
 
 def next_memorial_index(prefix: str, existing_refs: list[str]) -> int:
     indices = [
