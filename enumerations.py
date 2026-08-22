@@ -19,6 +19,18 @@ class TransactionColumns(IntEnum):
     CATEGORY = 6
     SPLIT = 7
     
+class BalanceColumns(IntEnum):
+    """Columns for the Balance screen's category drill-down table.
+    Kept separate from TransactionColumns: this table never shows
+    category or split status, so it shouldn't be coupled to columns
+    that only exist for other screens."""
+    REFERENCE = 0
+    SIDE = 1
+    AMOUNT = 2
+    DATE = 3
+    COUNTERPARTY = 4
+    DESCRIPTION = 5
+    
 class Colours(str, Enum):
     COLOUR1 = '#800080'
     COLOUR2 = '#314159'
