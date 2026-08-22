@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from balancewindowbackend import BalanceWindowBackend
-from removecategorydialog import RemoveCategoryDialog
+from unbookdialog import UnbookDialog
 from enumerations import Screen, BalanceColumns
 
 
@@ -186,9 +186,9 @@ class CategoryTransactionsWindow(QWidget):
 
     def _on_row_double_clicked(self, row: int, _column: int):
         t = self.table.item(row, BalanceColumns.REFERENCE).data(Qt.ItemDataRole.UserRole)
-        dialog = RemoveCategoryDialog(t, parent=self)
-        if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
-            self.backend.remove_transaction(t)
+        dialog = UnbookDialog(t, parent=self)
+        if dialog.exec() == UnbookDialog.DialogCode.Accepted:
+            self.backend.unbook_transaction(t)
             transactions = self.backend.get_transactions_for_category(
                 self._current_category_id
             )

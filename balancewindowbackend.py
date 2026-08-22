@@ -28,7 +28,7 @@ class BalanceWindowBackend:
         attached to every node, rolling up all descendant transactions.
         """
         categories = self.db.get_categories()
-        transactions = self.db.get_categorized_transactions()
+        transactions = self.db.get_booked_transactions()
 
         roots = Category.build_tree(categories)
         category_map = {c.id: c for c in categories}
@@ -62,15 +62,15 @@ class BalanceWindowBackend:
     def remove_category(self, transaction) -> None:
         if transaction.is_split:
             prefix = re.sub(r"-\d+$", "", transaction.reference or "")
-            self.db.remove_split_parts(prefix)
+            self.db.unbook_split_parts(prefix)
         else:
-            self.db.remove_category_by_reference(transaction.reference)
+            self.db.unbook_by_reference(transaction.reference)
             
     def delete_memorial_pair(self, transaction) -> None:
         base = memorial_base_ref(transaction.reference)
         self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
         
-    def remove_transaction(self, transaction):
+    def unbook_transaction(self, transaction):
         if transaction.reference and transaction.reference.startswith(MEMORIAL_PREFIX):
             self.delete_memorial_pair(transaction)
         else:

@@ -13,7 +13,7 @@ class JournalWindowBackend:
 
     def load_transactions(self):
         """Fetch all transactions from the database, cache them sorted latest first."""
-        self._transactions = self.db.get_categorized_transactions()
+        self._transactions = self.db.get_booked_transactions()
         self._transactions.sort(key=lambda t: t.date or "", reverse=True)
 
     # ── Queries ────────────────────────────────────────────────────────────
@@ -75,15 +75,15 @@ class JournalWindowBackend:
     def remove_category(self, transaction) -> None:
         if transaction.is_split:
             prefix = re.sub(r"-\d+$", "", transaction.reference or "")
-            self.db.remove_split_parts(prefix)
+            self.db.unbook_split_parts(prefix)
         else:
-            self.db.remove_category_by_reference(transaction.reference)
+            self.db.unbook_category_by_reference(transaction.reference)
             
     def delete_memorial_pair(self, transaction) -> None:
         base = memorial_base_ref(transaction.reference)
         self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
         
-    def remove_transaction(self, transaction):
+    def unbook_transaction(self, transaction):
         if transaction.reference.startswith(MEMORIAL_PREFIX):
             self.delete_memorial_pair(transaction)
         else:

@@ -14,7 +14,7 @@ class ProcessingWindow(QWidget):
         self.backend = ProcessingWindowBackend(self, db)
         self._ai_suggestions = {}  # {reference: category_id}
 
-        self.setWindowTitle("Muntenman Schuifwerk")
+        self.setWindowTitle("Processing Transactions")
         self.setGeometry(100, 100, 300, 200)
 
         layout = QVBoxLayout()
@@ -29,7 +29,7 @@ class ProcessingWindow(QWidget):
         self.table = QTableWidget()
         self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
-            "Reference", "CrdtDbt", "Amount", "Date", "counterparty", "Description", "Category", "Split"
+            "Reference", "Side", "Amount", "Date", "counterparty", "Description", "Category", "Split"
         ])
         self.table.setVerticalScrollMode(QTableWidget.ScrollMode.ScrollPerPixel)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
@@ -45,9 +45,9 @@ class ProcessingWindow(QWidget):
         self.btn_change_categories.clicked.connect(self._change_categories)
         layout.addWidget(self.btn_change_categories)
 
-        self.btn_save_categories = QPushButton("Save categories")
-        self.btn_save_categories.clicked.connect(self._save_categories)
-        layout.addWidget(self.btn_save_categories)
+        self.btn_book = QPushButton("Book transactions")
+        self.btn_book.clicked.connect(self._book)
+        layout.addWidget(self.btn_book)
         
         self.btn_auto_categorize = QPushButton("Auto-categorize (AI)")
         self.btn_auto_categorize.clicked.connect(self._auto_categorize)
@@ -65,7 +65,7 @@ class ProcessingWindow(QWidget):
 
     def load_transactions(self):
         self._reset_table()
-        transactions = self.backend.get_uncategorized_transactions()
+        transactions = self.backend.get_unbooked_transactions()
         categories = self.backend.get_categories()
         self._populate_table(transactions, categories)
         
@@ -188,7 +188,7 @@ class ProcessingWindow(QWidget):
         dialog.exec()
         self.load_transactions()
 
-    def _save_categories(self):
+    def _book(self):
         table_rows = []
     
         last_reference = last_side = last_date = last_counterparty = last_description = ""
@@ -250,18 +250,18 @@ class ProcessingWindow(QWidget):
                    category_id=actual_category_id,
                )
     
-        self.backend.save_categories(table_rows)
+        self.backend.book_transactions(table_rows)
         self._ai_suggestions = {}  # reset after save
         self.load_transactions()
         
         # a i 
         
     def _auto_categorize(self):
-        transactions = self.backend.get_uncategorized_transactions()
+        transactions = self.backend.get_unbooked_transactions()
         categories = self.backend.get_categories()
     
         if not transactions:
-            QMessageBox.information(self, "Nothing to do", "No uncategorized transactions.")
+            QMessageBox.information(self, "Nothing to do", "No unbooked transactions.")
             return
     
         progress = QProgressDialog("Asking Phi-4 Mini...", None, 0, 0, self)

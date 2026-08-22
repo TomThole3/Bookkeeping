@@ -34,7 +34,7 @@ class TransactionLike(Protocol):
     is_split: bool
  
  
-class RemoveCategoryDialog(QDialog):
+class UnbookDialog(QDialog):
     """Confirmation dialog shown before removing a category, or -- for
     memorial transactions -- before deleting both legs of the pair.
     """
@@ -47,7 +47,7 @@ class RemoveCategoryDialog(QDialog):
         self.setModal(True)
         self.setMinimumWidth(380)
         self.setWindowTitle(
-            "Delete memorial pair" if self._is_memorial else "Remove category"
+            "Delete memorial pair" if self._is_memorial else "Unbook"
         )
  
         layout = QVBoxLayout(self)
@@ -114,7 +114,7 @@ class RemoveCategoryDialog(QDialog):
             prefix = self._split_prefix(transaction.reference)
             return (
                 "⚠️  This is a split transaction. All parts matching "
-                f"<b>{prefix}-*</b> will have their category removed."
+                f"<b>{prefix}-*</b> will be unbooked."
             )
  
         return None
@@ -123,7 +123,7 @@ class RemoveCategoryDialog(QDialog):
         text = (
             "Delete this memorial pair?"
             if self._is_memorial
-            else "Remove the category from this transaction?"
+            else "Unbook this transaction?"
         )
         question = QLabel(text)
         question.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -137,7 +137,7 @@ class RemoveCategoryDialog(QDialog):
         btn_cancel.clicked.connect(self.reject)
         row.addWidget(btn_cancel)
  
-        btn_confirm = QPushButton("Delete pair" if self._is_memorial else "Remove category")
+        btn_confirm = QPushButton("Delete pair" if self._is_memorial else "Unbook")
         btn_confirm.setDefault(True)
         btn_confirm.clicked.connect(self.accept)
         row.addWidget(btn_confirm)

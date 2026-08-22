@@ -58,7 +58,7 @@ class DatabaseInteractions:
                 """
             )
 
-    def _remove_category_recursive(self, category_id):
+    def _unbook_recursive(self, category_id):
         cursor = self.conn.execute(
             """
             SELECT id FROM categories WHERE parent_id = ?
@@ -67,7 +67,7 @@ class DatabaseInteractions:
         )
         child_ids = [row[0] for row in cursor.fetchall()]
         for child_id in child_ids:
-            self._remove_category_recursive(child_id)
+            self._unbook_recursive(child_id)
 
         with self.conn:
             self.conn.execute(
@@ -91,7 +91,7 @@ class DatabaseInteractions:
     # Transaction methods
     # ------------------------------------------------------------------
 
-    def save_transaction(self, transaction):
+    def book_transaction(self, transaction):
         with self.conn:
             self.conn.execute(
                 """
@@ -140,7 +140,7 @@ class DatabaseInteractions:
                 (reference,),
             )
 
-    def get_uncategorized_transactions(self):
+    def get_unbooked_transactions(self):
         cursor = self.conn.execute(
             """
             SELECT reference, amount, side, date, description,
@@ -151,7 +151,7 @@ class DatabaseInteractions:
         )
         return [Transaction(*row) for row in cursor.fetchall()]
 
-    def get_categorized_transactions(self):
+    def get_booked_transactions(self):
         cursor = self.conn.execute(
             """
             SELECT reference, amount, side, date, description,
@@ -186,21 +186,21 @@ class DatabaseInteractions:
         )
         return cursor.fetchone()
 
-    def remove_category_by_reference(self, reference: str):
+    def unbook_by_reference(self, reference: str):
         with self.conn:
             self.conn.execute(
                 "UPDATE transactions SET category_id = NULL WHERE reference = ?",
                 (reference,)
             )
 
-    def remove_category_by_reference_prefix(self, prefix: str):
+    def unbook_by_reference_prefix(self, prefix: str):
         with self.conn:
             self.conn.execute(
                 "UPDATE transactions SET category_id = NULL WHERE reference LIKE ?",
                 (f"{prefix}-%",)
             )
 
-    def remove_split_parts(self, prefix: str):
+    def unbook_split_parts(self, prefix: str):
         with self.conn:
             self.conn.execute(
                 "DELETE FROM transactions WHERE reference LIKE ?",

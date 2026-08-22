@@ -11,7 +11,7 @@ from enumerations import Screen
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Muntenman Centraal")
+        self.setWindowTitle("Bookkeeping")
         self.resize(1800, 1000)
         self.stack = QStackedWidget()
 

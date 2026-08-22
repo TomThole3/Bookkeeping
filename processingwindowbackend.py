@@ -19,15 +19,15 @@ class ProcessingWindowBackend:
     def import_transactions_from_file(self, path):
         transactions = self.parser.extract_camt_transactions(path)
         for transaction in transactions:
-            self.db.save_transaction(transaction)
+            self.db.book_transaction(transaction)
 
-    def get_uncategorized_transactions(self):
-        return self.db.get_uncategorized_transactions()
+    def get_unbooked_transactions(self):
+        return self.db.get_unbooked_transactions()
 
     def get_categories(self):
         return self.db.get_categories()
 
-    def save_categories(self, rows):
+    def book_transactions(self, rows):
         rows = [row for row in rows if row.get('category_id') is not None]
     
         transactions = []
@@ -57,7 +57,7 @@ class ProcessingWindowBackend:
                     sublist[i].counterparty_iban = iban
                     sublist[i].reference = f'{sublist[i].reference}-{i+1}'
                     sublist[i].is_split = 1
-                    self.db.save_transaction(sublist[i])
+                    self.db.book_transaction(sublist[i])
             else:
                 self.db.update_transaction(sublist[0])
     

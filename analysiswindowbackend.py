@@ -10,7 +10,7 @@ class AnalysisWindowBackend:
     def _get_transactions_in_range(self, date_from: str, date_to: str) -> list:
         """Fetch all categorised transactions within the date range."""
         return [
-            t for t in self.db.get_categorized_transactions()
+            t for t in self.db.get_booked_transactions()
             if date_from <= (t.date or "") <= date_to 
         ]
 

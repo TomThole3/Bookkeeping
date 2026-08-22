@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QDate, Qt
 from journalwindowbackend import JournalWindowBackend
-from removecategorydialog import RemoveCategoryDialog
+from unbookdialog import UnbookDialog
 from enumerations import Screen
 
 
@@ -177,14 +177,14 @@ class JournalWindow(QWidget):
 
     # ── Double-click ───────────────────────────────────────────────────────
 
-    def remove_transaction(self, transaction) -> None:
-        self.backend.remove_transaction(transaction)
+    def unbook_transaction(self, transaction) -> None:
+        self.backend.unbook_transaction(transaction)
             
     def _on_row_double_clicked(self, row: int, _column: int):
         t = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
-        dialog = RemoveCategoryDialog(t, parent=self)
-        if dialog.exec() == RemoveCategoryDialog.DialogCode.Accepted:
-            self.backend.remove_transaction(t)
+        dialog = UnbookDialog(t, parent=self)
+        if dialog.exec() == UnbookDialog.DialogCode.Accepted:
+            self.backend.unbook_transaction(t)
             self.load_transactions()
 
     # ── Clear filters ──────────────────────────────────────────────────────
