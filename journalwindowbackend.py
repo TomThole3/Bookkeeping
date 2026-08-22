@@ -19,7 +19,7 @@ class JournalWindowBackend:
 
     # ── Queries ────────────────────────────────────────────────────────────
 
-    def get_categories(self) -> list[int]:
+    def get_category_ids(self) -> list[int]:
         """Return a sorted list of unique category IDs present in the loaded transactions."""
         return sorted({t.category_id for t in self._transactions if t.category_id})
 
@@ -40,7 +40,7 @@ class JournalWindowBackend:
         """
         reference    = (filters.get("reference") or "").lower()
         cdt_dbt      = filters.get("cdt_dbt", "All")
-        category     = filters.get("category", "All")
+        category_id = filters.get("category_id")
         counterparty = (filters.get("counterparty") or "").lower()
         description  = (filters.get("description") or "").lower()
         amount_min   = filters.get("amount_min", 0)
@@ -54,7 +54,7 @@ class JournalWindowBackend:
                 continue
             if cdt_dbt != "All" and t.cdt_dbt != cdt_dbt:
                 continue
-            if category != "All" and (t.category_id or "") != category:
+            if category_id is not None and t.category_id != category_id:
                 continue
             if counterparty and counterparty not in (t.counterparty_name or "").lower():
                 continue
@@ -75,14 +75,20 @@ class JournalWindowBackend:
 
     def remove_category(self, transaction) -> None:
         if transaction.is_split:
-           prefix = re.sub(r"-\d+$", "", transaction.reference or "")
-           self.db.remove_split_parts(prefix)
+            prefix = re.sub(r"-\d+$", "", transaction.reference or "")
+            self.db.remove_split_parts(prefix)
         else:
-           self.db.remove_category_by_reference(transaction.reference)
-           
-        def delete_memorial_pair(self, transaction) -> None:
-            base = memorial_base_ref(transaction.reference)
-            self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
+            self.db.remove_category_by_reference(transaction.reference)
+            
+    def delete_memorial_pair(self, transaction) -> None:
+        base = memorial_base_ref(transaction.reference)
+        self.db.delete_memorial_pair(f"{base}-D", f"{base}-C")
+        
+    def remove_transaction(self, transaction):
+        if transaction.reference and transaction.reference.startswith("MEM-"):
+            self.delete_memorial_pair(transaction)
+        else:
+            self.remove_category(transaction)
             
     # ── Private helpers ────────────────────────────────────────────────────
 

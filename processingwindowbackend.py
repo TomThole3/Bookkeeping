@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from camt_parser import CAMTParser
-from database import DatabaseInteractions
 from transaction import Transaction
 from collections import defaultdict
 from decimal import Decimal
@@ -11,9 +10,9 @@ from memorialhelper import memorial_prefix, next_memorial_index, build_memorial_
 
 class ProcessingWindowBackend:
 
-    def __init__(self, processingwindow):
+    def __init__(self, processingwindow, db):
         self.parser = CAMTParser()
-        self.db = DatabaseInteractions()
+        self.db = db
         self.processingwindow = processingwindow
         self.settings = load_settings()
 
@@ -60,7 +59,6 @@ class ProcessingWindowBackend:
                     sublist[i].is_split = 1
                     self.db.save_transaction(sublist[i])
             else:
-                print(f"saving category_id: {sublist[0].category_id!r}, type: {type(sublist[0].category_id)}")
                 self.db.update_transaction(sublist[0])
     
     def group_by_reference(self, transactions):

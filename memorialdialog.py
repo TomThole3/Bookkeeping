@@ -11,7 +11,6 @@ class MemorialDialog(QDialog):
     def __init__(self, categories, parent=None):
         super().__init__(parent)
         self.setWindowTitle("New memorialtransaction")
-        self.categories = categories
 
         layout = QVBoxLayout()
         form = QFormLayout()
@@ -25,7 +24,7 @@ class MemorialDialog(QDialog):
         form.addRow("Description:", self.description_edit)
 
         self.amount_spin = QDoubleSpinBox()
-        self.amount_spin.setMaximum(99999999.99)
+        self.amount_spin.setRange(0.01, 99999999.99)
         self.amount_spin.setDecimals(2)
         form.addRow("Amount:", self.amount_spin)
 
@@ -49,9 +48,6 @@ class MemorialDialog(QDialog):
     def _validate_and_accept(self):
         if self.from_combo.currentData() == self.to_combo.currentData():
             QMessageBox.warning(self, "Invalid entry", "Debit and credit category cannot be the same.")
-            return
-        if self.amount_spin.value() <= 0:
-            QMessageBox.warning(self, "Invalid entry", "Amount must be higher than 0")
             return
         self.accept()   
 

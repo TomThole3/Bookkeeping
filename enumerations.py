@@ -16,6 +16,8 @@ class TransactionColumns(IntEnum):
     DATE = 3
     COUNTERPARTY = 4
     DESCRIPTION = 5
+    CATEGORY = 6
+    SPLIT = 7
     
 class Colours(str, Enum):
     COLOUR1 = '#800080'

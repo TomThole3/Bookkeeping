@@ -3,8 +3,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QPushButton, QMessageBox, QVBoxLayout, QTableWidget, QTableWidgetItem, QProgressDialog, QComboBox, QHeaderView, QDialog, QFileDialog, QDoubleSpinBox
 from processingwindowbackend import ProcessingWindowBackend
 from categorydialog import AddCategoryDialog
-from autocategorizer import AutoCategorizer
 from memorialdialog import MemorialDialog
+from enumerations import TransactionColumns
 
 class ProcessingWindow(QWidget):
     def __init__(self, stack):
@@ -106,8 +106,8 @@ class ProcessingWindow(QWidget):
                 self._set_readonly_item(row, col, "")
 
         amount = 0 if split_index else transaction.amount
-        self.table.setCellWidget(row, 2, self._create_amount_spinbox(transaction.reference, split_index, amount))
-        self.table.setCellWidget(row, 6, self._create_category_combobox(transaction.reference, split_index, categories))
+        self.table.setCellWidget(row, 2, self._create_amount_spinbox(split_index, amount))
+        self.table.setCellWidget(row, 6, self._create_category_combobox(categories))
 
         btn_split = QPushButton("Split")
         btn_split.clicked.connect(
@@ -129,7 +129,7 @@ class ProcessingWindow(QWidget):
         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         self.table.setItem(row, col, item)
 
-    def _create_amount_spinbox(self, reference, split_index, amount):
+    def _create_amount_spinbox(self, split_index, amount):
         spin = QDoubleSpinBox()
         spin.setMaximum(99999999.99)
         spin.setDecimals(2)
@@ -140,7 +140,7 @@ class ProcessingWindow(QWidget):
             spin.setStyleSheet("QDoubleSpinBox { color: gray; }")
         return spin
 
-    def _create_category_combobox(self, reference, split_index, categories):
+    def _create_category_combobox(self, categories):
         combo = QComboBox()
         combo.blockSignals(True)
         combo.addItem("", None)
@@ -152,13 +152,13 @@ class ProcessingWindow(QWidget):
     def _setup_column_widths(self):
         header = self.table.horizontalHeader()
         # Fixed columns
-        self.table.setColumnWidth(0, 130)  # reference
-        self.table.setColumnWidth(1, 50)   # cdt_dbt
-        self.table.setColumnWidth(2, 110)  # amount spinbox
-        self.table.setColumnWidth(3, 100)  # date
-        self.table.setColumnWidth(4, 200)  # counterparty
-        self.table.setColumnWidth(6, 180)  # category combobox
-        self.table.setColumnWidth(7, 100)   # split button
+        self.table.setColumnWidth(TransactionColumns.REFERENCE, 130)  # reference
+        self.table.setColumnWidth(TransactionColumns.CRDTDBT, 50)   # cdt_dbt
+        self.table.setColumnWidth(TransactionColumns.AMOUNT, 110)  # amount spinbox
+        self.table.setColumnWidth(TransactionColumns.DATE, 100)  # date
+        self.table.setColumnWidth(TransactionColumns.COUNTERPARTY, 200)  # counterparty
+        self.table.setColumnWidth(TransactionColumns.CATEGORY, 180)  # category combobox
+        self.table.setColumnWidth(TransactionColumns.SPLIT, 100)   # split button
         # Description (col 5) stretches to fill remaining space
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
 
@@ -190,46 +190,38 @@ class ProcessingWindow(QWidget):
 
     def _save_categories(self):
         table_rows = []
-
-        last_reference = ""
-        last_cdt_dbt = ""
-        last_date = ""
-        last_counterparty = ""
-        last_description = ""
-        
+    
+        last_reference = last_cdt_dbt = last_date = last_counterparty = last_description = ""
+    
         for row in range(self.table.rowCount()):
             category_widget = self.table.cellWidget(row, 6)
             if category_widget.currentData() is None:
                 continue
+    
             reference_item = self.table.item(row, 0)
-            cdt_dbt_item = self.table.item(row, 1)
-            date_item = self.table.item(row, 3)
-            counterparty_item = self.table.item(row, 4)
-            description_item = self.table.item(row, 5)
-        
-            reference = reference_item.text() if reference_item and reference_item.text() else last_reference
-            cdt_dbt = cdt_dbt_item.text() if cdt_dbt_item and cdt_dbt_item.text() else last_cdt_dbt
-            date = date_item.text() if date_item and date_item.text() else last_date
-            counterparty = counterparty_item.text() if counterparty_item and counterparty_item.text() else last_counterparty
-            description = description_item.text() if description_item and description_item.text() else last_description
-        
-            # update memory
-            if reference_item and reference_item.text():
-                last_reference = reference
-            if cdt_dbt_item and cdt_dbt_item.text():
-                last_cdt_dbt = cdt_dbt
-            if date_item and date_item.text():
-                last_date = date
-            if counterparty_item and counterparty_item.text():
-                last_counterparty = counterparty
-            if description_item and description_item.text():
-                last_description = description
-        
+            is_continuation = not (reference_item and reference_item.text())
+    
+            if is_continuation:
+                reference    = last_reference
+                cdt_dbt      = last_cdt_dbt
+                date         = last_date
+                counterparty = last_counterparty
+                description  = last_description
+            else:
+                reference    = reference_item.text()
+                cdt_dbt      = self.table.item(row, 1).text()
+                date         = self.table.item(row, 3).text()
+                counterparty = self.table.item(row, 4).text()
+                description  = self.table.item(row, 5).text()
+    
+                last_reference, last_cdt_dbt, last_date, last_counterparty, last_description = (
+                    reference, cdt_dbt, date, counterparty, description
+                )
+    
             amount_widget = self.table.cellWidget(row, 2)
-        
             amount = amount_widget.value() if amount_widget else 0.0
-            category_id = category_widget.currentData() 
-        
+            category_id = category_widget.currentData()
+    
             table_rows.append({
                 "reference": reference,
                 "cdt_dbt": cdt_dbt,
@@ -307,13 +299,6 @@ class ProcessingWindow(QWidget):
                 if combo.itemData(i) == category_id:
                     combo.setCurrentIndex(i)
                     break
-    
-    def _check_ai_available(self):
-        categories = self.backend.get_categories()
-        available = AutoCategorizer(categories).is_ollama_available()
-        self.btn_auto_categorize.setEnabled(available)
-        if not available:
-            self.btn_auto_categorize.setToolTip("Ollama is not running or phi4-mini is not installed.")
             
     def _is_split_reference(self, reference: str) -> bool:
         count = sum(
@@ -325,7 +310,7 @@ class ProcessingWindow(QWidget):
     def _add_memorial(self):
         categories = self.backend.get_categories()
         if not categories:
-            QMessageBox.warning(self, "No categories exist")
+            QMessageBox.warning(self, "Error", "No categories exist")
             return
         dialog = MemorialDialog(categories, parent=self)
         if dialog.exec() == QDialog.DialogCode.Accepted:

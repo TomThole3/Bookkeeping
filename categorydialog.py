@@ -3,7 +3,6 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QPushButton, QLabel, QListWidget, QListWidgetItem, QMessageBox, QComboBox
 from PyQt6.QtCore import Qt
 from categorydialogbackend import CategoryDialogBackend
-from category import Category
 
 class AddCategoryDialog(QDialog):
     def __init__(self):
@@ -54,26 +53,16 @@ class AddCategoryDialog(QDialog):
             self.category_list.addItem(list_item)
             self.parent_combo.addItem(category.name, category.id)
 
-    def _populate_from_tree(self, category, depth):
-        indent = "  " * depth
-        display = f"{indent}{category.name}"
-
-        list_item = QListWidgetItem(display)
-        list_item.setData(Qt.ItemDataRole.UserRole, category.id)
-        self.category_list.addItem(list_item)
-
-        self.parent_combo.addItem(display, category.id)
-
-        for child in category.children:
-            self._populate_from_tree(child, depth + 1)
-
     def _add_category(self):
         name = self.input.text().strip()
-        if name:
-            parent_id = self.parent_combo.currentData()
-            self.backend.add_category(name, parent_id)
-            self.input.clear()
-            self._load_categories()
+        if not name:
+            return
+        parent_id = self.parent_combo.currentData()
+        if self.backend.add_category(name, parent_id) is None:
+            QMessageBox.warning(self, "Duplicate name", f"A category named '{name}' already exists.")
+            return
+        self.input.clear()
+        self._load_categories()
 
     def _remove_category(self):
         selected = self.category_list.currentItem()

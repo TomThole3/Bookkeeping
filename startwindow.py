@@ -1,5 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QStackedWidget
+from database import DatabaseInteractions
 from processingwindow import ProcessingWindow
 from balancewindow import BalanceWindow
 from journalwindow import JournalWindow
@@ -35,11 +36,12 @@ class MainWindow(QWidget):
         # ---------------------------
         # OTHER SCREENS
         # ---------------------------
-        self.processing_window = ProcessingWindow(self.stack)
-        self.journal_window = JournalWindow(self.stack)
-        self.balance_window = BalanceWindow(self.stack)
-        self.analysis_window = AnalysisWindow(self.stack)
-        self.settings_window = SettingsWindow(self.stack)
+        self.db = DatabaseInteractions()
+        self.processing_window = ProcessingWindow(self.stack, self.db)
+        self.journal_window = JournalWindow(self.stack, self.db)
+        self.balance_window = BalanceWindow(self.stack, self.db)
+        self.analysis_window = AnalysisWindow(self.stack, self.db)
+        self.settings_window = SettingsWindow(self.stack, self.db)
 
         # Add all screens to stack
         self.stack.addWidget(main_menu)               # index 0
