@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Journal screen for the Muntenman bookkeeping application.
+"""Journal screen for the bookkeeping application.
 
 This module defines :class:`JournalWindow`, a filterable table view of
 all booked transactions, with the ability to unbook (remove the
@@ -68,7 +68,7 @@ class JournalWindow(QWidget):
         self.stack: QStackedWidget = stack
         self._category_map: Dict[int, str] = {}
 
-        self.setWindowTitle("Muntenman Journaal")
+        self.setWindowTitle("Journaal")
         self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()

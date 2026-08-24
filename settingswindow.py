@@ -93,7 +93,7 @@ def apply_theme(theme: str) -> None:
 
 class SettingsWindow(QWidget):
     """
-    Settings screen for Muntenman Centraal.
+    Settings screen for the bookkeeping application.
 
     Usage – add to your stack just like the other windows:
 

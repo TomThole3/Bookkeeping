@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Balance screen for the Muntenman bookkeeping application.
+"""Balance screen for the bookkeeping application.
 
 This module defines two widgets:
 
@@ -61,7 +61,7 @@ class BalanceWindow(QWidget):
         self.backend: BalanceWindowBackend = BalanceWindowBackend(db)
         self.stack: QStackedWidget = stack
 
-        self.setWindowTitle("Muntenman Balans")
+        self.setWindowTitle("Balans")
         self.setGeometry(100, 100, 600, 500)
 
         layout = QVBoxLayout()
@@ -289,7 +289,7 @@ class CategoryTransactionsWindow(QWidget):
             transactions: The transactions to display, belonging
                 directly to this category.
         """
-        self.setWindowTitle(f"Muntenman — {category_name}")
+        self.setWindowTitle(f"{category_name}")
         self.label_category.setText(category_name)
         self._current_category_id = category_id
 

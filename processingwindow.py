@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Processing screen for the Muntenman bookkeeping application.
+"""Processing screen for the bookkeeping application.
 
 This module defines :class:`ProcessingWindow`, the screen used to import
 new bank transactions, categorise (manually or via AI) and optionally

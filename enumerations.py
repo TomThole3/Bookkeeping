@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Shared enumerations used across the Muntenman bookkeeping application.
+"""Shared enumerations used across the bookkeeping application.
 
 Centralising these avoids magic numbers/strings for screen indices,
 table column positions, and chart colours scattered throughout the UI

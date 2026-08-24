@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Analysis screen for the Muntenman bookkeeping application.
+"""Analysis screen for the bookkeeping application.
 
 This module defines :class:`AnalysisWindow`, a PyQt6 widget that lets the
 user pick a date range and a chart type, and then renders the corresponding
@@ -76,7 +76,7 @@ class AnalysisWindow(QWidget):
         self.backend: AnalysisWindowBackend = AnalysisWindowBackend(db)
         self.stack: QStackedWidget = stack
 
-        self.setWindowTitle("Muntenman Analyse")
+        self.setWindowTitle("Analyse")
         self.setGeometry(100, 100, 900, 600)
 
         # ── Main layout ─────────────────────────────────────────────
