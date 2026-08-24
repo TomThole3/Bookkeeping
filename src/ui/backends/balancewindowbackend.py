@@ -14,14 +14,11 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, List
 
-from category import Category
-from memorialhelper import memorial_base_ref, MEMORIAL_PREFIX
+from models.category import Category
+from util.memorialhelper import memorial_base_ref, MEMORIAL_PREFIX
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids hard runtime dependencies/
-    # circular imports on the concrete database and transaction classes.
-    from database import DatabaseInteractions
-    from transaction import Transaction
+from data.database import DatabaseInteractions
+from models.transaction import Transaction
 
 
 class CategoryTotals:

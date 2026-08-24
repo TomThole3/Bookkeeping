@@ -13,19 +13,16 @@ from collections import defaultdict
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from camt_parser import CAMTParser
-from transaction import Transaction
-from autocategorizer import AutoCategorizer
-from settingswindow import load_settings
-from memorialhelper import memorial_prefix, next_memorial_index, build_memorial_refs
+from data.camt_parser import CAMTParser
+from models.transaction import Transaction
+from ai.autocategorizer import AutoCategorizer
+from ui.windows.settingswindow import load_settings
+from util.memorialhelper import memorial_prefix, next_memorial_index, build_memorial_refs
 
 if TYPE_CHECKING:
-    # Only needed for type-checking; avoids hard runtime dependencies/
-    # circular imports on the concrete database, processing window, and
-    # category classes.
-    from database import DatabaseInteractions
-    from processingwindow import ProcessingWindow
-    from category import Category
+    from data.database import DatabaseInteractions
+    from ui.windows.processingwindow import ProcessingWindow
+    from models.category import Category
 
 # A single row of booking data as collected by ProcessingWindow._book(),
 # e.g. {"reference": ..., "side": ..., "date": ..., "counterparty": ...,

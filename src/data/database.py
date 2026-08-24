@@ -11,8 +11,8 @@ from __future__ import annotations
 import sqlite3
 from typing import List, Optional, Tuple
 
-from transaction import Transaction
-from category import Category
+from models.transaction import Transaction
+from models.category import Category
 
 # A row from `categorization_examples`:
 # (counterparty, description, amount, side, category_id)

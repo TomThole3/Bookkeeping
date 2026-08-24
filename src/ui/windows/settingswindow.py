@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 import qt_material
-from enumerations import Screen
+from util.enumerations import Screen
 
 #: Absolute path to the settings JSON file, stored alongside this module.
 SETTINGS_FILE: str = os.path.join(os.path.dirname(__file__), "settings.json")

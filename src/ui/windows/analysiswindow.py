@@ -8,7 +8,7 @@ matplotlib chart using data supplied by :class:`AnalysisWindowBackend`.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Sequence
+from typing import Any, Callable, Dict, List, Sequence
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
@@ -21,13 +21,10 @@ matplotlib.use("QtAgg")
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from enumerations import Screen, Colours
-from analysiswindowbackend import AnalysisWindowBackend
+from util.enumerations import Screen, Colours
+from ui.backends.analysiswindowbackend import AnalysisWindowBackend
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids a hard runtime dependency/
-    # circular import on the concrete database class.
-    from database import DatabaseInteractions
+from data.database import DatabaseInteractions
 
 # Chart registry: (display name, backend method name)
 # Each entry maps a human-readable label shown in the chart selector combo

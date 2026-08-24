@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 
 from lxml import etree
 from lxml.etree import _Element
-from transaction import Transaction
+from models.transaction import Transaction
 
 # A raw transaction row as extracted from the XML, before it is turned
 # into a Transaction object. Keys are CAMT field names (plus the

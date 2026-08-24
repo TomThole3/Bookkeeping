@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QListWidget, QListWidgetItem, QMessageBox, QComboBox,
 )
 from PyQt6.QtCore import Qt
-from categorydialogbackend import CategoryDialogBackend
+from ui.backends.categorydialogbackend import CategoryDialogBackend
 
 
 class AddCategoryDialog(QDialog):

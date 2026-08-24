@@ -8,7 +8,7 @@ category from) a transaction on double-click.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List
+from typing import Dict, List
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QGridLayout, QGroupBox,
@@ -17,15 +17,12 @@ from PyQt6.QtWidgets import (
     QStackedWidget,
 )
 from PyQt6.QtCore import QDate, Qt
-from journalwindowbackend import JournalWindowBackend
-from unbookdialog import UnbookDialog
-from enumerations import Screen
+from ui.backends.journalwindowbackend import JournalWindowBackend
+from ui.dialogs.unbookdialog import UnbookDialog
+from util.enumerations import Screen
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids hard runtime dependencies/
-    # circular imports on the concrete database and transaction classes.
-    from database import DatabaseInteractions
-    from transaction import Transaction
+from data.database import DatabaseInteractions
+from models.transaction import Transaction
 
 
 class JournalWindow(QWidget):

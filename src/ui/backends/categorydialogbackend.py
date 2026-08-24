@@ -11,8 +11,8 @@ from __future__ import annotations
 import sqlite3
 from typing import List, Optional
 
-from database import DatabaseInteractions
-from category import Category
+from data.database import DatabaseInteractions
+from models.category import Category
 
 
 class CategoryDialogBackend:

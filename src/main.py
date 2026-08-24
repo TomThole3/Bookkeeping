@@ -13,13 +13,13 @@ import sys
 from typing import Callable, List, Optional, Tuple
 
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QStackedWidget
-from database import DatabaseInteractions
-from processingwindow import ProcessingWindow
-from balancewindow import BalanceWindow
-from journalwindow import JournalWindow
-from analysiswindow import AnalysisWindow
-from settingswindow import SettingsWindow, load_settings, apply_theme
-from enumerations import Screen
+from data.database import DatabaseInteractions
+from ui.windows.processingwindow import ProcessingWindow
+from ui.windows.balancewindow import BalanceWindow
+from ui.windows.journalwindow import JournalWindow
+from ui.windows.analysiswindow import AnalysisWindow
+from ui.windows.settingswindow import SettingsWindow, load_settings, apply_theme
+from util.enumerations import Screen
 
 
 class MainWindow(QWidget):

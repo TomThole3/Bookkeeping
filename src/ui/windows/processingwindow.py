@@ -9,7 +9,7 @@ points for managing categories and creating memorial transactions.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -17,18 +17,14 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem, QProgressDialog, QComboBox, QHeaderView, QDialog,
     QFileDialog, QDoubleSpinBox, QStackedWidget,
 )
-from processingwindowbackend import ProcessingWindowBackend
-from categorydialog import AddCategoryDialog
-from memorialdialog import MemorialDialog
-from enumerations import TransactionColumns
+from ui.backends.processingwindowbackend import ProcessingWindowBackend
+from ui.dialogs.categorydialog import AddCategoryDialog
+from ui.dialogs.memorialdialog import MemorialDialog
+from util.enumerations import TransactionColumns
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids hard runtime dependencies/
-    # circular imports on the concrete database, category, and
-    # transaction classes.
-    from database import DatabaseInteractions
-    from category import Category
-    from transaction import Transaction
+from data.database import DatabaseInteractions
+from models.category import Category
+from models.transaction import Transaction
 
 # A single row of booking data collected from the table before being
 # handed to the backend's book_transactions().

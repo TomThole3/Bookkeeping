@@ -8,7 +8,7 @@ one category and credits another for the same amount.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QFormLayout, QLineEdit,
@@ -17,10 +17,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QDate
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids a hard runtime dependency/
-    # circular import on the concrete Category class.
-    from category import Category
+from models.category import Category
 
 # The dict returned by get_values(): date/description are strings, amount
 # is a float, and the category IDs are ints (or None if nothing was

@@ -11,7 +11,7 @@ from __future__ import annotations
  
 import re
 from typing import Optional, Protocol
-from memorialhelper import MEMORIAL_PREFIX, memorial_base_ref
+from util.memorialhelper import MEMORIAL_PREFIX, memorial_base_ref
  
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (

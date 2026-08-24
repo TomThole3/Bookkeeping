@@ -9,13 +9,11 @@ by the chart renderers in ``analysiswindow.py``.
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, Any, DefaultDict, Dict, List, Set
+from typing import Any, DefaultDict, Dict, List, Set
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids a hard runtime dependency/
-    # circular import on the concrete database and transaction classes.
-    from database import DatabaseInteractions
-    from transaction import Transaction
+
+from data.database import DatabaseInteractions
+from models.transaction import Transaction
 
 
 class AnalysisWindowBackend:
