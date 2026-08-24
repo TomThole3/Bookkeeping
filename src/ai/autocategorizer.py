@@ -10,15 +10,12 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import ollama
 
-if TYPE_CHECKING:
-    # Only needed for type-checking; avoids a hard runtime dependency/
-    # circular import on the concrete Category and Transaction classes.
-    from category import Category
-    from transaction import Transaction
+from models.category import Category
+from models.transaction import Transaction
 
 # A single past categorisation example, as stored by the database:
 # (counterparty, description, amount, side, category_id)
