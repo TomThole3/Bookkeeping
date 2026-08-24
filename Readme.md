@@ -1,22 +1,6 @@
 # Bookkeeping
 This bookkeeping program is a personal bookkeeping desktop application built with PyQt6. It imports bank statements (CAMT.053 XML), lets you categorize transactions manually or with AI assistance, and gives you a journal, a rolled-up category balance overview, and a set of analysis charts to understand your income and spending over time. A local SQLite database is used for storage, and an optional local LLM (via Ollama) can suggest categories for new transactions, using few-shot learning to optimize its performance.
 
-## Screenshots
-| Screen | Save as |
-|---|---|
-| Main menu | `docs/screenshots/main-menu.png` |
-| Processing (import & categorize) | `docs/screenshots/processing.png` |
-| Journal (filterable transaction list) | `docs/screenshots/journal.png` |
-| Balance (category totals) | `docs/screenshots/balance.png` |
-| Analysis (charts) | `docs/screenshots/analysis.png` |
-| Settings | `docs/screenshots/settings.png` |
-
-![Main menu](docs/screenshots/main-menu.png)
-![Processing screen](docs/screenshots/processing.png)
-![Journal screen](docs/screenshots/journal.png)
-![Balance screen](docs/screenshots/balance.png)
-![Analysis screen](docs/screenshots/analysis.png)
-
 ## Features
 - Import bank transactions from CAMT.053 XML statement files
 - Manually categorize transactions, or split a single transaction across multiple categories
